@@ -1,6 +1,7 @@
 # =========================================================
 # Chargement des packages
 # =========================================================
+
 library(haven)     # Pour importer les données Stata (.dta)
 library(dplyr)     # Manipulation de données
 library(ggplot2)   # Visualisation
