@@ -7,3 +7,9 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 </div>
+
+# 📌 Description du projet
+
+Ce projet s’inscrit dans le cadre de la formation d’ingénieurs statisticiens économistes à l’ENSAE Dakar. Il consiste à concevoir un pipeline complet de traitement et d’analyse des données Afrobarometer (Sénégal).
+
+L’objectif principal est de transformer des données brutes en insights exploitables pour l’analyse socio-économique et politique.
