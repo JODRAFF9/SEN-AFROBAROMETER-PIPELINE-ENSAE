@@ -17,7 +17,7 @@ L’objectif principal est de transformer des données brutes en insights exploi
 # 🌍 Source des données : Afrobarometer Sénégal
 
 Les données utilisées proviennent du programme Afrobarometer, disponible ici :  
-👉 ![Afrobarometer](https://www.afrobarometer.org/countries/senegal/)
+👉 ![Afrobarometer](https://www.afrobarometer.org/)
 
 Afrobarometer est un programme de recherche panafricain qui réalise des **enquêtes d’opinion auprès des citoyens** sur :
 
