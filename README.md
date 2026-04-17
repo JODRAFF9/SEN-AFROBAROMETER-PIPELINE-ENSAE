@@ -13,3 +13,22 @@
 Ce projet s’inscrit dans le cadre de la formation d’ingénieurs statisticiens économistes à l’ENSAE Dakar. Il consiste à concevoir un pipeline complet de traitement et d’analyse des données Afrobarometer (Sénégal).
 
 L’objectif principal est de transformer des données brutes en insights exploitables pour l’analyse socio-économique et politique.
+
+# 🌍 Source des données : Afrobarometer Sénégal
+
+![Afrobarometer](https://www.afrobarometer.org/wp-content/uploads/2022/03/AB_Round9_Map-01.png)
+
+Les données utilisées proviennent du programme Afrobarometer, disponible ici :  
+👉 https://www.afrobarometer.org/countries/senegal/
+
+Afrobarometer est un programme de recherche panafricain qui réalise des **enquêtes d’opinion auprès des citoyens** sur :
+
+- la gouvernance  
+- la démocratie  
+- les conditions de vie  
+
+## 📊 Spécificités des données
+
+- Enquêtes répétées (plusieurs rounds : 2002 à aujourd’hui)  
+- Échantillons représentatifs (~1200 individus)  
+- Données comparables dans le temps et entre pays  
