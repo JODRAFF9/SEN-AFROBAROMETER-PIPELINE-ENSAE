@@ -1,6 +1,5 @@
 # ==============================================================================
 # 02_INDIVIDUS.R — Construction de la table individus consolidée
-# Variables : démographiques, géographiques, profil emploi/biens/services
 # ==============================================================================
 
 library(dplyr)
@@ -8,21 +7,33 @@ library(here)
 
 source(here("pipeline", "R", "config.R"))
 
+# Helper : sélectionne et renomme les variables d'un mapping
+# mapping = liste nommée (nom_cible = "NOM_COL_BASE")
+selectionner_renommer <- function(base, id_col, mapping) {
+  dispo <- mapping[unlist(mapping) %in% names(base)]
+  if (length(dispo) == 0) {
+    return(base |>
+             dplyr::select(all_of(id_col)) |>
+             dplyr::rename(id_individu = all_of(id_col)))
+  }
+  cols   <- unname(unlist(dispo))   # valeurs = noms dans la base
+  cibles <- names(dispo)            # noms = noms cibles
+
+  base |>
+    dplyr::select(all_of(c(id_col, cols))) |>
+    dplyr::rename(
+      id_individu = all_of(id_col),
+      !!!setNames(cols, cibles)
+    )
+}
+
 # ==============================================================================
 # FONCTION: extraire_demo_individu
-# Age, genre, niveau d'études, langue parlée à la maison.
 # ==============================================================================
 extraire_demo_individu <- function(base) {
 
-  vars_map  <- unlist(VARS_DEMO)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
-  noms_cibles <- names(vars_dispo)
+  df <- selectionner_renommer(base, ID_INDIVIDU, VARS_DEMO)
 
-  df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", noms_cibles), all_of(c(ID_INDIVIDU, vars_dispo)))
-
-  # Libellés genre
   if ("genre" %in% names(df)) {
     df <- df |>
       dplyr::mutate(genre = dplyr::case_when(
@@ -32,7 +43,6 @@ extraire_demo_individu <- function(base) {
       ))
   }
 
-  # Libellés niveau d'études
   if ("niveau_etudes" %in% names(df)) {
     df <- df |>
       dplyr::mutate(niveau_etudes = dplyr::case_when(
@@ -42,7 +52,7 @@ extraire_demo_individu <- function(base) {
         niveau_etudes == 3 ~ "Primaire complet",
         niveau_etudes == 4 ~ "Secondaire incomplet",
         niveau_etudes == 5 ~ "Secondaire complet",
-        niveau_etudes == 6 ~ "Post-secondaire / Université incomplet",
+        niveau_etudes == 6 ~ "Post-secondaire incomplet",
         niveau_etudes == 7 ~ "Université complet",
         TRUE               ~ NA_character_
       ))
@@ -53,41 +63,25 @@ extraire_demo_individu <- function(base) {
 
 # ==============================================================================
 # FONCTION: extraire_geo_individu
-# Région, département, milieu (urbain/rural), commune, arrondissement.
 # ==============================================================================
 extraire_geo_individu <- function(base) {
 
-  vars_map   <- unlist(VARS_GEO)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
-  noms_cibles <- names(vars_dispo)
+  df <- selectionner_renommer(base, ID_INDIVIDU, VARS_GEO)
 
-  df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", noms_cibles), all_of(c(ID_INDIVIDU, vars_dispo)))
-
-  # Libellés région
   if ("region" %in% names(df)) {
     df <- df |>
       dplyr::mutate(region = dplyr::case_when(
-        region == 660 ~ "Dakar",
-        region == 661 ~ "Diourbel",
-        region == 662 ~ "Fatick",
-        region == 663 ~ "Kaffrine",
-        region == 664 ~ "Kaolack",
-        region == 665 ~ "Kédougou",
-        region == 666 ~ "Kolda",
-        region == 667 ~ "Louga",
-        region == 668 ~ "Matam",
-        region == 669 ~ "Saint-Louis",
-        region == 670 ~ "Sédhiou",
-        region == 671 ~ "Tambacounda",
-        region == 672 ~ "Thiès",
-        region == 673 ~ "Ziguinchor",
+        region == 660 ~ "Dakar",        region == 661 ~ "Diourbel",
+        region == 662 ~ "Fatick",       region == 663 ~ "Kaffrine",
+        region == 664 ~ "Kaolack",      region == 665 ~ "Kédougou",
+        region == 666 ~ "Kolda",        region == 667 ~ "Louga",
+        region == 668 ~ "Matam",        region == 669 ~ "Saint-Louis",
+        region == 670 ~ "Sédhiou",      region == 671 ~ "Tambacounda",
+        region == 672 ~ "Thiès",        region == 673 ~ "Ziguinchor",
         TRUE          ~ as.character(region)
       ))
   }
 
-  # Libellés milieu
   if ("milieu" %in% names(df)) {
     df <- df |>
       dplyr::mutate(milieu = dplyr::case_when(
@@ -102,20 +96,12 @@ extraire_geo_individu <- function(base) {
 
 # ==============================================================================
 # FONCTION: extraire_profil_individu
-# Statut d'emploi, secteur (ISIC Rev 4), biens, accès services sociaux.
 # ==============================================================================
 extraire_profil_individu <- function(base) {
 
   # ── Emploi ─────────────────────────────────────────────────────────────────
-  vars_emp   <- unlist(VARS_EMPLOI)
-  vars_emp_d <- vars_emp[vars_emp %in% names(base)]
+  df_emploi <- selectionner_renommer(base, ID_INDIVIDU, VARS_EMPLOI)
 
-  df_emploi <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_emp_d))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_emp_d)),
-                       all_of(c(ID_INDIVIDU, vars_emp_d)))
-
-  # Libellé statut emploi principal
   if ("statut_emploi_principal" %in% names(df_emploi)) {
     df_emploi <- df_emploi |>
       dplyr::mutate(statut_emploi_principal = dplyr::case_when(
@@ -130,7 +116,7 @@ extraire_profil_individu <- function(base) {
   # Classification ISIC Rev 4
   for (col_act in c("activite_principale", "activite_secondaire")) {
     if (col_act %in% names(df_emploi)) {
-      code_num <- suppressWarnings(as.integer(as.character(df_emploi[[col_act]])))
+      code_num  <- suppressWarnings(as.integer(as.character(df_emploi[[col_act]])))
       match_idx <- match(code_num, ISIC_MAPPING$code_afrobarometer)
       df_emploi[[paste0(col_act, "_isic_section")]] <- ISIC_MAPPING$isic_section[match_idx]
       df_emploi[[paste0(col_act, "_isic_libelle")]] <- ISIC_MAPPING$isic_libelle[match_idx]
@@ -138,35 +124,24 @@ extraire_profil_individu <- function(base) {
   }
 
   # ── Biens possédés ──────────────────────────────────────────────────────────
-  vars_biens   <- unlist(VARS_BIENS)
-  vars_biens_d <- vars_biens[vars_biens %in% names(base)]
+  df_biens <- selectionner_renommer(base, ID_INDIVIDU, VARS_BIENS)
 
-  df_biens <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_biens_d))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_biens_d)),
-                       all_of(c(ID_INDIVIDU, vars_biens_d)))
-
-  # Indicateur binaire : possède (val>=1) vs ne possède pas (val==0)
-  cols_biens <- names(vars_biens_d)
-  df_biens <- df_biens |>
-    dplyr::mutate(
-      dplyr::across(
-        all_of(cols_biens),
-        ~ dplyr::if_else(. >= 1, 1L, 0L, missing = NA_integer_)
-      ),
-      score_actifs = rowSums(dplyr::pick(all_of(cols_biens)), na.rm = FALSE)
-    )
+  cols_biens <- intersect(names(unlist(VARS_BIENS)), names(df_biens))
+  if (length(cols_biens) > 0) {
+    df_biens <- df_biens |>
+      dplyr::mutate(
+        dplyr::across(
+          all_of(cols_biens),
+          ~ dplyr::if_else(suppressWarnings(as.integer(.)) >= 1, 1L, 0L,
+                           missing = NA_integer_)
+        ),
+        score_actifs = rowSums(dplyr::pick(all_of(cols_biens)), na.rm = FALSE)
+      )
+  }
 
   # ── Accès aux services sociaux ──────────────────────────────────────────────
-  vars_svc   <- unlist(VARS_SERVICES)
-  vars_svc_d <- vars_svc[vars_svc %in% names(base)]
+  df_services <- selectionner_renommer(base, ID_INDIVIDU, VARS_SERVICES)
 
-  df_services <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_svc_d))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_svc_d)),
-                       all_of(c(ID_INDIVIDU, vars_svc_d)))
-
-  # Libellé source d'eau
   if ("source_eau" %in% names(df_services)) {
     df_services <- df_services |>
       dplyr::mutate(source_eau = dplyr::case_when(
@@ -177,12 +152,11 @@ extraire_profil_individu <- function(base) {
         source_eau == 5 ~ "Puits non protégé",
         source_eau == 6 ~ "Source/rivière",
         source_eau == 7 ~ "Eau de pluie",
-        source_eau == 8 ~ "Eau en bouteille achetée",
+        source_eau == 8 ~ "Eau en bouteille",
         TRUE            ~ NA_character_
       ))
   }
 
-  # Accès électricité binaire
   if ("electricite_acces" %in% names(df_services)) {
     df_services <- df_services |>
       dplyr::mutate(electricite_acces = dplyr::case_when(
@@ -192,7 +166,6 @@ extraire_profil_individu <- function(base) {
       ))
   }
 
-  # ── Fusion emploi + biens + services ────────────────────────────────────────
   df_emploi |>
     dplyr::left_join(df_biens,    by = "id_individu") |>
     dplyr::left_join(df_services, by = "id_individu")

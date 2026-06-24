@@ -1,9 +1,5 @@
 # ==============================================================================
 # 03_MENAGES.R — Construction de la table ménages consolidée
-# Variables : profil du répondant (proxy CM), services zone, conditions de vie
-#
-# Note Afrobarometer : 1 répondant par ménage sélectionné aléatoirement.
-# Le répondant représente le ménage. Il n'y a pas de variable CM distincte.
 # ==============================================================================
 
 library(dplyr)
@@ -11,22 +7,42 @@ library(here)
 
 source(here("pipeline", "R", "config.R"))
 
+# Helper partagé (dupliqué ici pour éviter la dépendance à 02_individus.R)
+selectionner_renommer <- function(base, id_col, mapping) {
+  dispo <- mapping[unlist(mapping) %in% names(base)]
+  if (length(dispo) == 0) {
+    return(base |>
+             dplyr::select(all_of(id_col)) |>
+             dplyr::rename(id_individu = all_of(id_col)))
+  }
+  cols   <- unname(unlist(dispo))
+  cibles <- names(dispo)
+
+  base |>
+    dplyr::select(all_of(c(id_col, cols))) |>
+    dplyr::rename(
+      id_individu = all_of(id_col),
+      !!!setNames(cols, cibles)
+    )
+}
+
 # ==============================================================================
 # FONCTION: extraire_profil_repondant_menage
-# Variables démographiques du répondant (représentant du ménage).
+# Variables démographiques du répondant (représentant du ménage), préfixées rep_
 # ==============================================================================
 extraire_profil_repondant_menage <- function(base) {
 
-  # Mêmes variables démo que pour les individus, préfixées "rep_"
-  vars_map   <- unlist(VARS_DEMO)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
+  dispo  <- VARS_DEMO[unlist(VARS_DEMO) %in% names(base)]
+  cols   <- unname(unlist(dispo))
+  cibles <- paste0("rep_", names(dispo))
 
   df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", paste0("rep_", names(vars_dispo))),
-                       all_of(c(ID_INDIVIDU, vars_dispo)))
+    dplyr::select(all_of(c(ID_INDIVIDU, cols))) |>
+    dplyr::rename(
+      id_individu = all_of(ID_INDIVIDU),
+      !!!setNames(cols, cibles)
+    )
 
-  # Libellé genre
   if ("rep_genre" %in% names(df)) {
     df <- df |>
       dplyr::mutate(rep_genre = dplyr::case_when(
@@ -36,7 +52,6 @@ extraire_profil_repondant_menage <- function(base) {
       ))
   }
 
-  # Libellé niveau d'études
   if ("rep_niveau_etudes" %in% names(df)) {
     df <- df |>
       dplyr::mutate(rep_niveau_etudes = dplyr::case_when(
@@ -57,17 +72,10 @@ extraire_profil_repondant_menage <- function(base) {
 
 # ==============================================================================
 # FONCTION: extraire_geo_menage
-# Localisation géographique du ménage.
 # ==============================================================================
 extraire_geo_menage <- function(base) {
 
-  vars_map   <- unlist(VARS_GEO)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
-
-  df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_dispo)),
-                       all_of(c(ID_INDIVIDU, vars_dispo)))
+  df <- selectionner_renommer(base, ID_INDIVIDU, VARS_GEO)
 
   if ("region" %in% names(df)) {
     df <- df |>
@@ -97,22 +105,10 @@ extraire_geo_menage <- function(base) {
 
 # ==============================================================================
 # FONCTION: extraire_services_zone_menage
-# Accès aux services sociaux dans la zone de dénombrement du ménage.
 # ==============================================================================
 extraire_services_zone_menage <- function(base) {
 
-  vars_map   <- unlist(VARS_SERVICES)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
-
-  if (length(vars_dispo) == 0) {
-    return(base |> dplyr::select(all_of(ID_INDIVIDU)) |>
-             dplyr::rename(id_individu = all_of(ID_INDIVIDU)))
-  }
-
-  df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_dispo)),
-                       all_of(c(ID_INDIVIDU, vars_dispo)))
+  df <- selectionner_renommer(base, ID_INDIVIDU, VARS_SERVICES)
 
   if ("source_eau" %in% names(df)) {
     df <- df |>
@@ -143,29 +139,21 @@ extraire_services_zone_menage <- function(base) {
 
 # ==============================================================================
 # FONCTION: extraire_conditions_vie_menage
-# Privations des 12 derniers mois + indice composite.
 # ==============================================================================
 extraire_conditions_vie_menage <- function(base) {
 
-  vars_map   <- unlist(VARS_VIE_MENAGE)
-  vars_dispo <- vars_map[vars_map %in% names(base)]
+  df <- selectionner_renommer(base, ID_INDIVIDU, VARS_VIE_MENAGE)
 
-  if (length(vars_dispo) == 0) {
-    return(base |> dplyr::select(all_of(ID_INDIVIDU)) |>
-             dplyr::rename(id_individu = all_of(ID_INDIVIDU)))
-  }
+  cols_priv <- intersect(names(VARS_VIE_MENAGE), names(df))
 
-  df <- base |>
-    dplyr::select(all_of(c(ID_INDIVIDU, vars_dispo))) |>
-    dplyr::rename_with(~ c("id_individu", names(vars_dispo)),
-                       all_of(c(ID_INDIVIDU, vars_dispo)))
+  if (length(cols_priv) == 0) return(df)
 
-  # Convertir toutes les colonnes de privation en numérique
-  cols_priv <- names(vars_dispo)
   df <- df |>
-    dplyr::mutate(dplyr::across(all_of(cols_priv), ~ suppressWarnings(as.numeric(.))))
+    dplyr::mutate(
+      dplyr::across(all_of(cols_priv), ~ suppressWarnings(as.numeric(.)))
+    )
 
-  # Indice de privation sévère : nombre de types de privation fréquente (val >= 2)
+  # Indicateurs de privation fréquente (val >= 2 = quelques fois ou plus)
   df <- df |>
     dplyr::mutate(
       dplyr::across(
@@ -177,7 +165,6 @@ extraire_conditions_vie_menage <- function(base) {
         dplyr::pick(starts_with("prive_")),
         na.rm = FALSE
       ),
-      # Quintile de privation
       groupe_privation = dplyr::case_when(
         indice_privation == 0 ~ "Aucune privation",
         indice_privation == 1 ~ "Privation légère (1 type)",
