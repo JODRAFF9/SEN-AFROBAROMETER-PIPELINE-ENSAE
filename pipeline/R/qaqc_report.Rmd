@@ -161,7 +161,7 @@ h1, h2, h3 { color: #1A3A5C; }
 
 ## Indicateurs clés
 
-```{r kpis}
+```{r kpis, results='asis'}
 n_ind    <- get_val("Observations individus")
 n_men    <- get_val("Observations ménages")
 n_vind   <- get_val("Variables individus")
@@ -362,7 +362,7 @@ if (!is.null(qaqc$rapport_na)) {
 
 ## Valeurs aberrantes
 
-```{r outliers, fig.height=4}
+```{r outliers, results='asis', fig.height=4}
 if (!is.null(qaqc$outliers) && nrow(qaqc$outliers) > 0) {
 
   df_out <- qaqc$outliers |> dplyr::arrange(dplyr::desc(pct))
@@ -548,7 +548,7 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
 
 ### Score d'actifs
 
-```{r est-actifs}
+```{r est-actifs, results='asis'}
 if (!is.null(qaqc$estimations$score_actifs_stats)) {
   sa <- qaqc$estimations$score_actifs_stats
 
@@ -583,7 +583,7 @@ if (!is.null(qaqc$estimations$score_actifs_stats)) {
 
 ## Conditions de vie des ménages
 
-```{r est-privation, fig.height=4}
+```{r est-privation, results='asis', fig.height=4}
 if (!is.null(qaqc$estimations$indice_privation_menages)) {
   ip <- qaqc$estimations$indice_privation_menages
 
@@ -638,7 +638,7 @@ if (!is.null(qaqc$estimations$distribution_privation)) {
 }
 ```
 
-```{r privation-detail}
+```{r privation-detail, results='asis'}
 if (!is.null(qaqc$estimations$distribution_privation)) {
   cat('<div class="info-box"><strong>Les 5 dimensions de privation mesurées :</strong><br>')
   cat('Nourriture (Q6A) · Eau potable (Q6B) · Soins médicaux (Q6C) · Combustible (Q6D) · Revenus en espèces (Q6E)<br>')
