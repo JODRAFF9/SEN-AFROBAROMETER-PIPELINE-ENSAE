@@ -101,7 +101,9 @@ verifier_variables_requises <- function(base, verbose = TRUE) {
     ID_INDIVIDU,
     unlist(VARS_DEMO),
     unlist(VARS_GEO),
-    unlist(VARS_PROFIL),
+    unlist(VARS_EMPLOI),
+    unlist(VARS_BIENS),
+    unlist(VARS_SERVICES),
     unlist(VARS_VIE_MENAGE)
   ))
 
