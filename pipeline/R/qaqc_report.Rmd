@@ -208,7 +208,8 @@ if (!is.null(qaqc$controles) && nrow(qaqc$controles) > 0) {
       )
     ) |>
     dplyr::select(Contrôle = controle, Statut, Détail = detail) |>
-    kable(format = "html", escape = FALSE, caption = "Résultats des contrôles de cohérence") |>
+    kable(format = "html", escape = FALSE, caption = "Résultats des contrôles de cohérence",
+          align = c("l","c","l")) |>
     kable_styling(bootstrap_options = c("hover", "condensed"), full_width = TRUE)
 }
 ```
@@ -275,7 +276,8 @@ if (!is.null(qaqc$rapport_na)) {
                     `N manquant` = n_na, `% NA`, Statut)
 
     df_ind_show |>
-      kable(format = "html", escape = FALSE, caption = "Complétude — Table individus") |>
+      kable(format = "html", escape = FALSE, caption = "Complétude — Table individus",
+            align = c("l","r","r","r","c")) |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
 }
@@ -302,7 +304,8 @@ if (!is.null(qaqc$rapport_na)) {
       ) |>
       dplyr::select(Variable = variable, `N total` = n_total,
                     `N manquant` = n_na, `% NA`, Statut) |>
-      kable(format = "html", escape = FALSE, caption = "Complétude — Table ménages") |>
+      kable(format = "html", escape = FALSE, caption = "Complétude — Table ménages",
+            align = c("l","r","r","r","c")) |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
 }
@@ -384,7 +387,8 @@ if (!is.null(qaqc$outliers) && nrow(qaqc$outliers) > 0) {
     dplyr::rename(Variable = variable, `N outliers` = n_outliers, `%` = pct,
                   Min = min_val, Max = max_val,
                   `Borne inf.` = borne_inf, `Borne sup.` = borne_sup) |>
-    kable(format = "html", caption = "Détail des outliers détectés (méthode IQR × 3)") |>
+    kable(format = "html", caption = "Détail des outliers détectés (méthode IQR × 3)",
+          align = c("l","r","r","r","r","r","r")) |>
     kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
 
 } else {
@@ -550,7 +554,8 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
       dplyr::select(Section = isic_section_principal,
                     `Libellé ISIC Rev 4` = isic_libelle_principal,
                     Effectif = effectif, `%` = pourcentage) |>
-      kable(format = "html", caption = "Distribution sectorielle — ISIC Rev 4") |>
+      kable(format = "html", caption = "Distribution sectorielle — ISIC Rev 4",
+            align = c("c","l","r","r")) |>
       kable_styling(bootstrap_options = c("striped","hover"), full_width = TRUE)
   }
 }
@@ -649,7 +654,8 @@ Le tableau ci-dessous centralise tous les indicateurs clés du pipeline en un se
 if (!is.null(qaqc$resume_global)) {
   qaqc$resume_global |>
     dplyr::rename(Indicateur = indicateur, Valeur = valeur) |>
-    kable(caption = "Résumé complet du pipeline") |>
+    kable(format = "html", caption = "Résumé complet du pipeline",
+          align = c("l","r")) |>
     kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = FALSE)
 }
 ```
