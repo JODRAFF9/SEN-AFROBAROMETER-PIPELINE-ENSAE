@@ -1,0 +1,9 @@
+# Données brutes Afrobarometer — non versionnées (fichiers volumineux / confidentiels)
+*.dta
+*.sav
+*.csv
+*.xlsx
+*.zip
+
+# Conserver ce fichier .gitignore
+!.gitignore
