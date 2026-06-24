@@ -138,22 +138,22 @@ h1, h2, h3 { color: #1A3A5C; }
 .table-hover tbody tr:hover { background: #EBF2FA; }
 ```
 
-```{r banniere, results=’asis’, echo=FALSE}
+```{r banniere, results='asis', echo=FALSE}
 logo <- here::here("pipeline", "R", "img", "image-1782332008765.png")
 if (file.exists(logo)) {
   b64 <- xfun::base64_uri(logo)
-  cat(paste0(‘<div class="banner">
+  cat(paste0('<div class="banner">
   <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
-    <img src="’, b64, ‘" style="height:60px;border-radius:6px;">
+    <img src="', b64, '" style="height:60px;border-radius:6px;">
     <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>
-  </div>’))
+  </div>'))
 } else {
-  cat(‘<div class="banner">
-  <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>’)
+  cat('<div class="banner">
+  <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>')
 }
 cat("
-  <p>Pipeline de traitement des données d’opinion — ENSAE Dakar</p>
-  <p style=’font-size:.88em;opacity:.85;margin-top:6px;line-height:1.8;’>
+  <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
+  <p style='font-size:.88em;opacity:.85;margin-top:6px;line-height:1.8;'>
     Ibrahim ADAM ALASSANE<br>Moussa DIAKITE<br>Fallou NGOM<br>
     Cheikh Sadibou NGOM<br>Gnalen SANGARE<br>
     Seman Giovanni Jocelyn GADO<br>Sié Rachid TRAORE<br>
