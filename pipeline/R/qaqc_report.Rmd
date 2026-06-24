@@ -188,9 +188,9 @@ mc(n_anom,   "Anomalies",               ifelse(!is.na(n_anom)   && n_anom   > 0,
 cat('</div>\n')
 ```
 
-## Aperçu de la base brute
+## Résumé statistique de la base brute
 
-Le tableau ci-dessous présente un résumé statistique de la base brute importée avant tout recodage : valeurs min/max, médiane, moyenne et nombre de valeurs manquantes pour chaque variable numérique.
+Le tableau ci-dessous présente un résumé statistique de la base brute importée avant tout recodage : valeurs min/max, médiane, moyenne et nombre de valeurs manquantes pour chaque variable numérique de la base.
 
 ```{r summary-base}
 if (!is.null(base) && ncol(base) > 0) {
