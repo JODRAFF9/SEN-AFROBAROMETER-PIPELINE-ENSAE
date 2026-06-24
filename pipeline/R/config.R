@@ -26,7 +26,7 @@ FICHIER_BRUT <- "base.dta"
 
 # ── Colonne identifiant individu ──────────────────────────────────────────────
 # SbjNum est l'identifiant unique dans la base Afrobarometer Sénégal Round 9
-ID_INDIVIDU <- "SbjNum"
+ID_INDIVIDU <- "SBJNUM"
 
 # ── Mapping des variables — DÉMOGRAPHIQUES ────────────────────────────────────
 # Basé sur la base réelle : SEN_R9 (1200 obs, 1487 variables)
@@ -43,7 +43,7 @@ VARS_DEMO <- list(
 # ── Mapping des variables — GÉOGRAPHIQUES ─────────────────────────────────────
 VARS_GEO <- list(
   region      = "REGION",        # Région (660=Dakar...675=Ziguinchor)
-  departement = "Constitutency", # Département/Circonscription
+  departement = "CONSTITUTENCY", # Département/Circonscription
   milieu      = "URBRUR",        # 1=Rural, 2=Urbain
   commune     = "PSU1",          # Ville/Commune
   arrondismt  = "PSU2"           # Arrondissement
@@ -52,7 +52,7 @@ VARS_GEO <- list(
 # ── Mapping des variables — PROFIL EMPLOI ─────────────────────────────────────
 VARS_EMPLOI <- list(
   statut_emploi_principal   = "Q93A",      # Travail salarié (0=Non/pas cherche, 1=Non/cherche, 2=Temps partiel, 3=Temps plein)
-  activite_principale       = "Q93B_yes",  # Activité principale (secteur -> ISIC)
+  activite_principale       = "Q93B_YES",  # Activité principale (secteur -> ISIC)
   activite_secondaire       = "Q93B_2",    # Dernière activité principale
   # Revenus : Afrobarometer mesure la privation de revenus (Q6E), pas le montant
   privation_revenus         = "Q6E"        # Manque de revenus en espèces (0=Jamais...4=Toujours)
