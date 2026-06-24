@@ -150,8 +150,8 @@ detecter_outliers_univaries <- function(base,
     x   <- x[!is.na(x)]
     if (length(x) < 10) return(NULL)
 
-    q1  <- quantile(x, 0.25, na.rm = TRUE)
-    q3  <- quantile(x, 0.75, na.rm = TRUE)
+    q1  <- unname(quantile(x, 0.25, na.rm = TRUE))
+    q3  <- unname(quantile(x, 0.75, na.rm = TRUE))
     iqr <- q3 - q1
 
     borne_inf <- q1 - facteur_iqr * iqr
