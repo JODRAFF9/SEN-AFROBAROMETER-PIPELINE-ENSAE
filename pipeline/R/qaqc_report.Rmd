@@ -163,12 +163,12 @@ Les cartes ci-dessous résument en un coup d'oeil la taille de la base traitée,
 
 ```{r kpis, results='asis'}
 n_ind    <- get_val("Observations individus")
-n_men    <- get_val("Observations menages")
+n_men    <- get_val("Observations ménages")
 n_vind   <- get_val("Variables individus")
-n_vmen   <- get_val("Variables menages")
+n_vmen   <- get_val("Variables ménages")
 n_alerte <- get_val("Variables NA Alerte (>20%)")
 n_crit   <- get_val("Variables NA Critique (>50%)")
-n_anom   <- get_val("Controles avec anomalies")
+n_anom   <- get_val("Contrôles avec anomalies")
 
 mc <- function(val, lbl, cls) {
   cat('<div class="metric-card', cls, '">',
