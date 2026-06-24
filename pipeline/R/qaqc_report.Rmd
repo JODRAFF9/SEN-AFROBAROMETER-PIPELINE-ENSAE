@@ -1,0 +1,352 @@
+---
+title: "Rapport QAQC — Afrobarometer Sénégal"
+subtitle: "Round `r params$round` (`r params$annee`)"
+date: "`r format(Sys.time(), '%d %B %Y à %H:%M')`"
+output:
+  html_document:
+    theme: flatly
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: false
+    number_sections: true
+    df_print: paged
+    self_contained: true
+params:
+  qaqc: NULL
+  round: 9
+  annee: 2022
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width  = 9,
+  fig.height = 5
+)
+
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+
+qaqc <- params$qaqc
+```
+
+```{css, echo=FALSE}
+body { font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+.statut-ok       { background-color: #C6EFCE; color: #1A6E1A; font-weight: bold; }
+.statut-alerte   { background-color: #FFEB9C; color: #9C5700; font-weight: bold; }
+.statut-critique { background-color: #FFC7CE; color: #9C0006; font-weight: bold; }
+.metric-box {
+  display: inline-block; padding: 15px 25px; margin: 8px;
+  border-radius: 8px; text-align: center; min-width: 130px;
+}
+.metric-ok   { background: #C6EFCE; border: 2px solid #1A6E1A; }
+.metric-warn { background: #FFEB9C; border: 2px solid #9C5700; }
+.metric-bad  { background: #FFC7CE; border: 2px solid #9C0006; }
+.metric-num  { font-size: 2em; font-weight: bold; }
+.metric-lbl  { font-size: 0.85em; color: #555; }
+```
+
+# Vue d'ensemble {.tabset}
+
+## Résumé global
+
+```{r resume-global}
+if (!is.null(qaqc$resume_global)) {
+  rg <- qaqc$resume_global
+
+  # Extraire valeurs clés
+  get_val <- function(ind) {
+    v <- rg$valeur[rg$indicateur == ind]
+    if (length(v) == 0) return(NA)
+    v[1]
+  }
+
+  n_ind    <- get_val("Observations individus")
+  n_men    <- get_val("Observations ménages")
+  n_alerte <- get_val("Variables NA Alerte (>20%)")
+  n_crit   <- get_val("Variables NA Critique (>50%)")
+  n_anom   <- get_val("Contrôles avec anomalies")
+
+  cl_alerte <- if (!is.na(n_alerte) && n_alerte > 0) "metric-warn" else "metric-ok"
+  cl_crit   <- if (!is.na(n_crit)   && n_crit   > 0) "metric-bad"  else "metric-ok"
+  cl_anom   <- if (!is.na(n_anom)   && n_anom   > 0) "metric-bad"  else "metric-ok"
+
+  cat(sprintf('
+<div style="text-align:center; margin-bottom:20px;">
+  <div class="metric-box metric-ok">
+    <div class="metric-num">%s</div>
+    <div class="metric-lbl">Individus</div>
+  </div>
+  <div class="metric-box metric-ok">
+    <div class="metric-num">%s</div>
+    <div class="metric-lbl">Ménages</div>
+  </div>
+  <div class="metric-box %s">
+    <div class="metric-num">%s</div>
+    <div class="metric-lbl">Alertes NA (&gt;20%%)</div>
+  </div>
+  <div class="metric-box %s">
+    <div class="metric-num">%s</div>
+    <div class="metric-lbl">Critiques NA (&gt;50%%)</div>
+  </div>
+  <div class="metric-box %s">
+    <div class="metric-num">%s</div>
+    <div class="metric-lbl">Anomalies</div>
+  </div>
+</div>
+',
+    format(n_ind, big.mark=" "),
+    format(n_men, big.mark=" "),
+    cl_alerte, n_alerte,
+    cl_crit,   n_crit,
+    cl_anom,   n_anom
+  ))
+}
+```
+
+```{r resume-table}
+if (!is.null(qaqc$resume_global)) {
+  qaqc$resume_global |>
+    kable(caption = "Indicateurs globaux du pipeline", col.names = c("Indicateur", "Valeur")) |>
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+}
+```
+
+## Contrôles de cohérence
+
+```{r controles}
+if (!is.null(qaqc$controles)) {
+  df_ctrl <- qaqc$controles
+  df_ctrl |>
+    kable(caption = "Résultats des contrôles de cohérence") |>
+    kable_styling(bootstrap_options = c("striped", "hover"), full_width = TRUE) |>
+    column_spec(2,
+      background = ifelse(df_ctrl$statut == "OK", "#C6EFCE", "#FFC7CE"),
+      color      = ifelse(df_ctrl$statut == "OK", "#1A6E1A", "#9C0006"),
+      bold       = TRUE
+    )
+}
+```
+
+# Qualité des données : valeurs manquantes {.tabset}
+
+## Vue synthétique
+
+```{r na-plot}
+if (!is.null(qaqc$rapport_na) && nrow(qaqc$rapport_na) > 0) {
+  df_na <- qaqc$rapport_na |>
+    dplyr::filter(pct_na > 0) |>
+    dplyr::mutate(
+      statut = factor(statut, levels = c("OK","Faible","Alerte","Critique")),
+      couleur = dplyr::case_when(
+        statut == "OK"       ~ "#1A6E1A",
+        statut == "Faible"   ~ "#5B9BD5",
+        statut == "Alerte"   ~ "#FF8C00",
+        statut == "Critique" ~ "#C00000"
+      )
+    )
+
+  ggplot(df_na, aes(x = reorder(variable, pct_na), y = pct_na, fill = couleur)) +
+    geom_col() +
+    scale_fill_identity(
+      guide = "legend",
+      labels = c("#1A6E1A"="OK (<5%)", "#5B9BD5"="Faible (5-20%)",
+                 "#FF8C00"="Alerte (20-50%)", "#C00000"="Critique (>50%)"),
+      breaks = c("#1A6E1A","#5B9BD5","#FF8C00","#C00000"),
+      name = "Statut"
+    ) +
+    geom_hline(yintercept = c(20, 50), linetype = "dashed",
+               color = c("#FF8C00","#C00000"), linewidth = 0.8) +
+    coord_flip() +
+    facet_wrap(~ table, scales = "free_y") +
+    labs(
+      title    = "Taux de valeurs manquantes par variable",
+      subtitle = "Lignes pointillées : seuils d'alerte (20%) et critique (50%)",
+      x        = "Variable",
+      y        = "% NA"
+    ) +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom", strip.text = element_text(face = "bold"))
+}
+```
+
+## Détail individus
+
+```{r na-individus}
+if (!is.null(qaqc$rapport_na)) {
+  df_ind <- qaqc$rapport_na |> dplyr::filter(table == "individus")
+  if (nrow(df_ind) > 0) {
+    df_ind |>
+      dplyr::arrange(dplyr::desc(pct_na)) |>
+      kable(caption = "NA — Table individus") |>
+      kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE) |>
+      column_spec(6,
+        background = dplyr::case_when(
+          df_ind$statut[order(df_ind$pct_na, decreasing=TRUE)] == "Critique" ~ "#FFC7CE",
+          df_ind$statut[order(df_ind$pct_na, decreasing=TRUE)] == "Alerte"   ~ "#FFEB9C",
+          TRUE ~ "#C6EFCE"
+        )
+      )
+  }
+}
+```
+
+## Détail ménages
+
+```{r na-menages}
+if (!is.null(qaqc$rapport_na)) {
+  df_men_na <- qaqc$rapport_na |> dplyr::filter(table == "menages")
+  if (nrow(df_men_na) > 0) {
+    df_men_na |>
+      dplyr::arrange(dplyr::desc(pct_na)) |>
+      kable(caption = "NA — Table ménages") |>
+      kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
+  }
+}
+```
+
+# Valeurs aberrantes (Outliers)
+
+```{r outliers}
+if (!is.null(qaqc$outliers) && nrow(qaqc$outliers) > 0) {
+  qaqc$outliers |>
+    dplyr::arrange(dplyr::desc(pct)) |>
+    kable(caption = paste0("Variables avec outliers (méthode IQR × ", 3, ")")) |>
+    kable_styling(bootstrap_options = c("striped","hover"), full_width = TRUE)
+} else {
+  cat("> ✅ Aucune valeur aberrante détectée dans les variables numériques.")
+}
+```
+
+# Estimations primaires {.tabset}
+
+## Répartition par genre
+
+```{r est-genre, fig.height=3.5}
+if (!is.null(qaqc$estimations$distribution_genre)) {
+  df_g <- qaqc$estimations$distribution_genre
+  ggplot(df_g, aes(x = reorder(genre, effectif), y = pourcentage, fill = genre)) +
+    geom_col(show.legend = FALSE) +
+    geom_text(aes(label = paste0(pourcentage, "%")), hjust = -0.1) +
+    coord_flip() +
+    scale_fill_manual(values = c("Homme"="#4472C4","Femme"="#ED7D31")) +
+    labs(title = "Distribution par genre", x = NULL, y = "%") +
+    theme_minimal()
+}
+```
+
+## Niveau d'éducation
+
+```{r est-educ, fig.height=5}
+if (!is.null(qaqc$estimations$distribution_education)) {
+  df_e <- qaqc$estimations$distribution_education |> dplyr::filter(!is.na(niveau_etudes))
+  ggplot(df_e, aes(x = reorder(niveau_etudes, pourcentage), y = pourcentage)) +
+    geom_col(fill = "#70AD47") +
+    geom_text(aes(label = paste0(pourcentage, "%")), hjust = -0.1) +
+    coord_flip() +
+    labs(title = "Niveau d'instruction", x = NULL, y = "%") +
+    theme_minimal()
+}
+```
+
+## Milieu de résidence
+
+```{r est-milieu, fig.height=3}
+if (!is.null(qaqc$estimations$distribution_milieu)) {
+  df_m <- qaqc$estimations$distribution_milieu |> dplyr::filter(!is.na(milieu))
+  ggplot(df_m, aes(x = milieu, y = pourcentage, fill = milieu)) +
+    geom_col(show.legend = FALSE, width = 0.5) +
+    geom_text(aes(label = paste0(pourcentage, "%")), vjust = -0.3) +
+    scale_fill_manual(values = c("Urbain"="#4472C4","Rural"="#ED7D31")) +
+    labs(title = "Milieu de résidence", x = NULL, y = "%") +
+    theme_minimal()
+}
+```
+
+## Répartition régionale
+
+```{r est-region, fig.height=5}
+if (!is.null(qaqc$estimations$distribution_region)) {
+  df_r <- qaqc$estimations$distribution_region |> dplyr::filter(!is.na(region))
+  ggplot(df_r, aes(x = reorder(region, pourcentage), y = pourcentage)) +
+    geom_col(fill = "#5B9BD5") +
+    geom_text(aes(label = paste0(pourcentage, "%")), hjust = -0.1) +
+    coord_flip() +
+    labs(title = "Distribution régionale", x = NULL, y = "%") +
+    theme_minimal()
+}
+```
+
+## Statut d'emploi
+
+```{r est-emploi, fig.height=3.5}
+if (!is.null(qaqc$estimations$distribution_emploi)) {
+  df_emp <- qaqc$estimations$distribution_emploi |>
+    dplyr::filter(!is.na(statut_emploi_principal))
+  ggplot(df_emp, aes(x = reorder(statut_emploi_principal, pourcentage), y = pourcentage)) +
+    geom_col(fill = "#FF8C00") +
+    geom_text(aes(label = paste0(pourcentage, "%")), hjust = -0.1) +
+    coord_flip() +
+    labs(title = "Statut d'emploi principal", x = NULL, y = "%") +
+    theme_minimal()
+}
+```
+
+## Secteur d'activité (ISIC Rev 4)
+
+```{r est-isic}
+if (!is.null(qaqc$estimations$distribution_isic)) {
+  df_isic <- qaqc$estimations$distribution_isic |>
+    dplyr::filter(!is.na(isic_libelle_principal))
+  if (nrow(df_isic) > 0) {
+    df_isic |>
+      dplyr::select(isic_section_principal, isic_libelle_principal, effectif, pourcentage) |>
+      dplyr::rename(Section = isic_section_principal, Libellé = isic_libelle_principal,
+                    Effectif = effectif, `%` = pourcentage) |>
+      kable(caption = "Distribution sectorielle — Classification ISIC Rev 4") |>
+      kable_styling(bootstrap_options = c("striped","hover"), full_width = TRUE)
+  }
+}
+```
+
+## Indice de privation
+
+```{r est-privation, fig.height=3.5}
+if (!is.null(qaqc$estimations$indice_privation_menages)) {
+  cat("**Statistiques de l'indice de privation (ménages) :**\n\n")
+  qaqc$estimations$indice_privation_menages |>
+    kable(col.names = c("Moyenne","Médiane","% sans privation")) |>
+    kable_styling(bootstrap_options = "condensed", full_width = FALSE)
+}
+
+if (!is.null(qaqc$estimations$distribution_privation)) {
+  df_priv <- qaqc$estimations$distribution_privation |> dplyr::filter(!is.na(indice_privation))
+  ggplot(df_priv, aes(x = factor(indice_privation), y = pourcentage)) +
+    geom_col(fill = "#C00000", alpha = 0.8) +
+    geom_text(aes(label = paste0(pourcentage, "%")), vjust = -0.3) +
+    labs(title = "Distribution de l'indice de privation (ménages)",
+         subtitle = "Nombre de types de privation fréquente (≥ 'quelques fois')",
+         x = "Indice de privation", y = "%") +
+    theme_minimal()
+}
+```
+
+# Score d'actifs
+
+```{r est-actifs}
+if (!is.null(qaqc$estimations$score_actifs_stats)) {
+  qaqc$estimations$score_actifs_stats |>
+    kable(caption = "Score d'actifs ménagers (nombre de biens possédés sur 6)") |>
+    kable_styling(bootstrap_options = c("striped","condensed"), full_width = FALSE)
+}
+```
+
+---
+
+*Rapport généré automatiquement par le Pipeline Afrobarometer Sénégal — ENSAE Dakar.*
+*Horodatage : `r format(qaqc$horodatage_qaqc, "%d/%m/%Y %H:%M:%S")`*
