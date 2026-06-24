@@ -139,9 +139,9 @@ h1, h2, h3 { color: #1A3A5C; }
 ```
 
 <div class="banner">
-  <div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
-    <img src="img/image.png" style="height:60px; border-radius:6px;">
-    <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>
+
+
+  <h2 style="margin:0 0 8px;">Rapport QAQC &mdash; Afrobarometer S&eacute;n&eacute;gal</h2>
   </div>
   <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
   <p style="font-size:.88em; opacity:.85; margin-top:6px; line-height:1.8;">
