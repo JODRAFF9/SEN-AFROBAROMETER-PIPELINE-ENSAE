@@ -144,7 +144,7 @@ h1, h2, h3 { color: #1A3A5C; }
   <p>
     <span class="badge">&#128197; Round `r params$round`</span>
     <span class="badge">&#128197; `r params$annee`</span>
-    <span class="badge">&#127470;&#127475; Sénégal</span>
+    <span class="badge">&#127480;&#127475; Sénégal</span>
     <span class="badge">&#128336; `r format(qaqc$horodatage_qaqc, "%d/%m/%Y %H:%M")`</span>
   </p>
 </div>
