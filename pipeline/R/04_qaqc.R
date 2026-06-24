@@ -238,9 +238,21 @@ produire_qaqc <- function(df_individus, df_menages,
   rapport_na   <- dplyr::bind_rows(na_individus, na_menages)
 
   if (verbose) message("[04_qaqc] Contrôles de cohérence...")
+  uid_ind <- verifier_unicite_id(df_individus, "id_individu", "individus")
+  uid_men <- verifier_unicite_id(df_menages,   "id_individu", "ménages")
+  n_doublons_total <- sum(
+    as.integer(gsub("[^0-9]", "", uid_ind$detail)),
+    as.integer(gsub("[^0-9]", "", uid_men$detail))
+  )
+  uid_combine <- data.frame(
+    controle = "Unicité de id_individu (individus + ménages)",
+    statut   = ifelse(n_doublons_total == 0, "OK", "Anomalie"),
+    detail   = sprintf("%d doublon(s) détecté(s)", n_doublons_total),
+    stringsAsFactors = FALSE
+  )
+
   controles <- dplyr::bind_rows(
-    verifier_unicite_id(df_individus, "id_individu", "individus"),
-    verifier_unicite_id(df_menages,   "id_individu", "ménages"),
+    uid_combine,
     verifier_coherence_ages(df_individus)
   )
 
