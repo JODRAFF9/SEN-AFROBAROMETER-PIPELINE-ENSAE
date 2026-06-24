@@ -172,45 +172,22 @@ n_alerte <- get_val("Variables NA Alerte (>20%)")
 n_crit   <- get_val("Variables NA Critique (>50%)")
 n_anom   <- get_val("Contrôles avec anomalies")
 
-cat(sprintf('
-<div class="metrics-row">
-  <div class="metric-card mc-blue">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Individus</div>
-  </div>
-  <div class="metric-card mc-blue">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Ménages</div>
-  </div>
-  <div class="metric-card mc-gold">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Variables individus</div>
-  </div>
-  <div class="metric-card mc-gold">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Variables ménages</div>
-  </div>
-  <div class="metric-card %s">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Alertes NA (&gt;20%%)</div>
-  </div>
-  <div class="metric-card %s">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Critiques NA (&gt;50%%)</div>
-  </div>
-  <div class="metric-card %s">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Anomalies</div>
-  </div>
-</div>',
-  format(n_ind, big.mark = " "),
-  format(n_men, big.mark = " "),
-  format(n_vind, big.mark = " "),
-  format(n_vmen, big.mark = " "),
-  ifelse(!is.na(n_alerte) && n_alerte > 0, "mc-orange", "mc-green"), n_alerte,
-  ifelse(!is.na(n_crit)   && n_crit   > 0, "mc-red",    "mc-green"), n_crit,
-  ifelse(!is.na(n_anom)   && n_anom   > 0, "mc-red",    "mc-green"), n_anom
-))
+mc <- function(val, lbl, cls) {
+  cat('<div class="metric-card', cls, '">',
+      '<div class="metric-val">', val, '</div>',
+      '<div class="metric-lbl">', lbl, '</div>',
+      '</div>\n')
+}
+
+cat('<div class="metrics-row">\n')
+mc(format(n_ind,   big.mark = " "), "Individus",           "mc-blue")
+mc(format(n_men,   big.mark = " "), "M&eacute;nages",      "mc-blue")
+mc(format(n_vind,  big.mark = " "), "Variables individus", "mc-gold")
+mc(format(n_vmen,  big.mark = " "), "Variables m&eacute;nages", "mc-gold")
+mc(n_alerte, "Alertes NA (&gt;20 %)",   ifelse(!is.na(n_alerte) && n_alerte > 0, "mc-orange", "mc-green"))
+mc(n_crit,   "Critiques NA (&gt;50 %)", ifelse(!is.na(n_crit)   && n_crit   > 0, "mc-red",    "mc-green"))
+mc(n_anom,   "Anomalies",               ifelse(!is.na(n_anom)   && n_anom   > 0, "mc-red",    "mc-green"))
+cat('</div>\n')
 ```
 
 ## Contrôles de cohérence
@@ -577,29 +554,17 @@ Les cartes ci-dessous résument les statistiques descriptives du score d'actifs,
 ```{r est-actifs, results='asis'}
 if (!is.null(qaqc$estimations$score_actifs_stats)) {
   sa <- qaqc$estimations$score_actifs_stats
-
-  cat(sprintf('
-<div class="metrics-row">
-  <div class="metric-card mc-blue">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Moyenne</div>
-  </div>
-  <div class="metric-card mc-gold">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Médiane</div>
-  </div>
-  <div class="metric-card mc-green">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Écart-type</div>
-  </div>
-  <div class="metric-card mc-orange">
-    <div class="metric-val">%s – %s</div>
-    <div class="metric-lbl">Min – Max</div>
-  </div>
-</div>',
-    fnum(sa$moyenne, 2), fnum(sa$mediane, 0),
-    fnum(sa$ecart_type, 2), fnum(sa$min, 0), fnum(sa$max, 0)
-  ))
+  cat('<div class="metrics-row">\n')
+  cat('<div class="metric-card mc-blue"><div class="metric-val">', fnum(sa$moyenne, 2),
+      '</div><div class="metric-lbl">Moyenne</div></div>\n')
+  cat('<div class="metric-card mc-gold"><div class="metric-val">', fnum(sa$mediane, 0),
+      '</div><div class="metric-lbl">M&eacute;diane</div></div>\n')
+  cat('<div class="metric-card mc-green"><div class="metric-val">', fnum(sa$ecart_type, 2),
+      '</div><div class="metric-lbl">&Eacute;cart-type</div></div>\n')
+  cat('<div class="metric-card mc-orange"><div class="metric-val">', fnum(sa$min, 0),
+      '&ndash;', fnum(sa$max, 0),
+      '</div><div class="metric-lbl">Min &ndash; Max</div></div>\n')
+  cat('</div>\n')
 }
 ```
 
@@ -615,19 +580,12 @@ Les indicateurs et le graphique suivants décrivent l'indice de privation compos
 if (!is.null(qaqc$estimations$indice_privation_menages)) {
   ip <- qaqc$estimations$indice_privation_menages
 
-  cat(sprintf('
-<div class="metrics-row">
-  <div class="metric-card mc-blue">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Indice moyen de privation</div>
-  </div>
-  <div class="metric-card mc-green">
-    <div class="metric-val">%s</div>
-    <div class="metric-lbl">Sans aucune privation</div>
-  </div>
-</div>',
-    fnum(ip$moyenne, 2), fpct(ip$pct_zero_privation)
-  ))
+  cat('<div class="metrics-row">\n')
+  cat('<div class="metric-card mc-blue"><div class="metric-val">', fnum(ip$moyenne, 2),
+      '</div><div class="metric-lbl">Indice moyen de privation</div></div>\n')
+  cat('<div class="metric-card mc-green"><div class="metric-val">', fpct(ip$pct_zero_privation),
+      '</div><div class="metric-lbl">Sans aucune privation</div></div>\n')
+  cat('</div>\n')
 }
 
 if (!is.null(qaqc$estimations$distribution_privation)) {
