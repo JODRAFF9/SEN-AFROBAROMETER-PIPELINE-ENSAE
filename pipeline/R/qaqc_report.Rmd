@@ -1,7 +1,6 @@
 ---
 title: "Rapport QAQC — Afrobarometer Sénégal"
 subtitle: "Round `r params$round` · `r params$annee` · Pipeline ENSAE Dakar"
-date: ""
 output:
   html_document:
     theme: flatly
