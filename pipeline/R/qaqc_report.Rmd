@@ -653,5 +653,7 @@ if (!is.null(qaqc$resume_global)) {
 <div style="text-align:center; color:#546E7A; font-size:.88em; margin-top:30px; padding-top:16px; border-top:1px solid #ddd;">
   <strong>Pipeline Afrobarometer Sénégal</strong> · ENSAE Dakar · ISE Fin de Formation<br>
   Rapport généré automatiquement — Round `r params$round` (`r params$annee`)<br>
+  <strong>Groupe :</strong> Ibrahim ADAM ALASSANE · Moussa DIAKITE · Fallou NGOM · Cheikh Sadibou NGOM · Gnalen SANGARE · Seman Giovanni Jocelyn GADO · Sié Rachid TRAORE<br>
+  <strong>Superviseur :</strong> M. MBodj<br>
   <em>Données : <a href="https://www.afrobarometer.org/countries/senegal/" target="_blank">Afrobarometer</a></em>
 </div>
