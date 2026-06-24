@@ -160,8 +160,8 @@ if (!is.null(qaqc$rapport_na) && nrow(qaqc$rapport_na) > 0) {
       breaks = c("#1A6E1A","#5B9BD5","#FF8C00","#C00000"),
       name = "Statut"
     ) +
-    geom_hline(yintercept = c(20, 50), linetype = "dashed",
-               color = c("#FF8C00","#C00000"), linewidth = 0.8) +
+    geom_hline(yintercept = 20, linetype = "dashed", color = "#FF8C00", linewidth = 0.8) +
+    geom_hline(yintercept = 50, linetype = "dashed", color = "#C00000", linewidth = 0.8) +
     coord_flip() +
     facet_wrap(~ table, scales = "free_y") +
     labs(
