@@ -6,25 +6,7 @@ library(dplyr)
 library(here)
 
 source(here("pipeline", "R", "config.R"))
-
-# Helper partagé (dupliqué ici pour éviter la dépendance à 02_individus.R)
-selectionner_renommer <- function(base, id_col, mapping) {
-  dispo <- mapping[unlist(mapping) %in% names(base)]
-  if (length(dispo) == 0) {
-    return(base |>
-             dplyr::select(all_of(id_col)) |>
-             dplyr::rename(id_individu = all_of(id_col)))
-  }
-  cols   <- unname(unlist(dispo))
-  cibles <- names(dispo)
-
-  base |>
-    dplyr::select(all_of(c(id_col, cols))) |>
-    dplyr::rename(
-      id_individu = all_of(id_col),
-      !!!setNames(cols, cibles)
-    )
-}
+source(here("pipeline", "R", "utils.R"))
 
 # ==============================================================================
 # FONCTION: extraire_profil_repondant_menage
@@ -43,29 +25,11 @@ extraire_profil_repondant_menage <- function(base) {
       !!!setNames(cols, cibles)
     )
 
-  if ("rep_genre" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(rep_genre = dplyr::case_when(
-        rep_genre == 1 ~ "Homme",
-        rep_genre == 2 ~ "Femme",
-        TRUE           ~ NA_character_
-      ))
-  }
+  if ("rep_genre" %in% names(df))
+    df <- dplyr::mutate(df, rep_genre = libeller_genre(rep_genre))
 
-  if ("rep_niveau_etudes" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(rep_niveau_etudes = dplyr::case_when(
-        rep_niveau_etudes == 0 ~ "Aucun enseignement formel",
-        rep_niveau_etudes == 1 ~ "Enseignement informel/coranique",
-        rep_niveau_etudes == 2 ~ "Primaire incomplet",
-        rep_niveau_etudes == 3 ~ "Primaire complet",
-        rep_niveau_etudes == 4 ~ "Secondaire incomplet",
-        rep_niveau_etudes == 5 ~ "Secondaire complet",
-        rep_niveau_etudes == 6 ~ "Post-secondaire incomplet",
-        rep_niveau_etudes == 7 ~ "Université complet",
-        TRUE                   ~ NA_character_
-      ))
-  }
+  if ("rep_niveau_etudes" %in% names(df))
+    df <- dplyr::mutate(df, rep_niveau_etudes = libeller_niveau_etudes(rep_niveau_etudes))
 
   df
 }
@@ -77,28 +41,11 @@ extraire_geo_menage <- function(base) {
 
   df <- selectionner_renommer(base, ID_INDIVIDU, VARS_GEO)
 
-  if ("region" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(region = dplyr::case_when(
-        region == 660 ~ "Dakar",        region == 661 ~ "Diourbel",
-        region == 662 ~ "Fatick",       region == 663 ~ "Kaffrine",
-        region == 664 ~ "Kaolack",      region == 665 ~ "Kédougou",
-        region == 666 ~ "Kolda",        region == 667 ~ "Louga",
-        region == 668 ~ "Matam",        region == 669 ~ "Saint-Louis",
-        region == 670 ~ "Sédhiou",      region == 671 ~ "Tambacounda",
-        region == 672 ~ "Thiès",        region == 673 ~ "Ziguinchor",
-        TRUE          ~ as.character(region)
-      ))
-  }
+  if ("region" %in% names(df))
+    df <- dplyr::mutate(df, region = libeller_region(region))
 
-  if ("milieu" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(milieu = dplyr::case_when(
-        milieu == 1 ~ "Rural",
-        milieu == 2 ~ "Urbain",
-        TRUE        ~ NA_character_
-      ))
-  }
+  if ("milieu" %in% names(df))
+    df <- dplyr::mutate(df, milieu = libeller_milieu(milieu))
 
   df
 }
@@ -110,29 +57,11 @@ extraire_services_zone_menage <- function(base) {
 
   df <- selectionner_renommer(base, ID_INDIVIDU, VARS_SERVICES)
 
-  if ("source_eau" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(source_eau = dplyr::case_when(
-        source_eau == 1 ~ "Robinet dans la maison",
-        source_eau == 2 ~ "Robinet dans la cour/concession",
-        source_eau == 3 ~ "Fontaine publique",
-        source_eau == 4 ~ "Puits protégé",
-        source_eau == 5 ~ "Puits non protégé",
-        source_eau == 6 ~ "Source/rivière",
-        source_eau == 7 ~ "Eau de pluie",
-        source_eau == 8 ~ "Eau en bouteille",
-        TRUE            ~ NA_character_
-      ))
-  }
+  if ("source_eau" %in% names(df))
+    df <- dplyr::mutate(df, source_eau = libeller_source_eau(source_eau))
 
-  if ("electricite_acces" %in% names(df)) {
-    df <- df |>
-      dplyr::mutate(electricite_acces = dplyr::case_when(
-        electricite_acces == 1 ~ "Oui",
-        electricite_acces == 0 ~ "Non",
-        TRUE                   ~ NA_character_
-      ))
-  }
+  if ("electricite_acces" %in% names(df))
+    df <- dplyr::mutate(df, electricite_acces = libeller_electricite(electricite_acces))
 
   df
 }

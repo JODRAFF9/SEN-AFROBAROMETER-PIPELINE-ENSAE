@@ -34,6 +34,7 @@ library(here)
 
 # ── Chargement des modules ────────────────────────────────────────────────────
 source(here("pipeline", "R", "config.R"))
+source(here("pipeline", "R", "utils.R"))
 source(here("pipeline", "R", "01_import.R"))
 source(here("pipeline", "R", "02_individus.R"))
 source(here("pipeline", "R", "03_menages.R"))

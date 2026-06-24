@@ -7,6 +7,7 @@ library(dplyr)
 library(here)
 
 source(here("pipeline", "R", "config.R"))
+source(here("pipeline", "R", "utils.R"))
 
 # Chargement conditionnel d'openxlsx pour le rapport QAQC
 charger_openxlsx <- function() {
@@ -176,4 +177,3 @@ lancer_export <- function(df_individus, df_menages, qaqc, verbose = TRUE) {
 }
 
 
-`%||%` <- function(a, b) if (!is.null(a)) a else b

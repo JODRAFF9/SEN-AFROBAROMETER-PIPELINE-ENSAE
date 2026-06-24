@@ -9,6 +9,7 @@ library(purrr)
 library(here)
 
 source(here("pipeline", "R", "config.R"))
+source(here("pipeline", "R", "utils.R"))
 
 # ==============================================================================
 # FONCTION: generer_rapport_html
@@ -75,12 +76,7 @@ rapport_na_par_variable <- function(df, nom_table = "") {
       n_total  = n_total,
       n_na     = n_na,
       pct_na   = pct_na,
-      statut   = dplyr::case_when(
-        pct_na == 0                           ~ "OK",
-        pct_na <= SEUILS_QAQC$pct_na_alerte * 100  ~ "Faible",
-        pct_na <= SEUILS_QAQC$pct_na_exclusion * 100 ~ "Alerte",
-        TRUE                                  ~ "Critique"
-      ),
+      statut   = statut_na(pct_na),
       stringsAsFactors = FALSE
     )
   })
