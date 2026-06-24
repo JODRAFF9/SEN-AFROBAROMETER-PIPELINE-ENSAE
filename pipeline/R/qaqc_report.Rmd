@@ -141,7 +141,7 @@ h1, h2, h3 { color: #1A3A5C; }
 <!-- Bannière -->
 <div class="banner">
   <div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
-    `r if(file.exists(here::here("pipeline","R","img","afrobarometer_logo.png"))) '<img src="pipeline/R/img/afrobarometer_logo.png" style="height:60px; border-radius:6px;">' else ''`
+    `r if(file.exists(here::here("pipeline","R","img","image-1782332008765.png"))) '<img src="pipeline/R/img/image-1782332008765.png" style="height:60px; border-radius:6px;">' else ''`
     <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>
   </div>
   <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
