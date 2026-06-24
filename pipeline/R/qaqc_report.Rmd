@@ -141,6 +141,11 @@ h1, h2, h3 { color: #1A3A5C; }
 <div class="banner">
   <h2>&#128202; Rapport QAQC — Afrobarometer Sénégal</h2>
   <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
+  <p style="font-size:.88em; opacity:.85; margin-top:6px;">
+    Ibrahim ADAM ALASSANE · Moussa DIAKITE · Fallou NGOM · Cheikh Sadibou NGOM ·
+    Gnalen SANGARE · Seman Giovanni Jocelyn GADO · Sié Rachid TRAORE<br>
+    <em>Superviseur : M. MBodj</em>
+  </p>
   <p>
     <span class="badge">&#128197; Round `r params$round`</span>
     <span class="badge">&#128197; `r params$annee`</span>
