@@ -113,11 +113,14 @@ verifier_coherence_ages <- function(df_individus) {
 # FONCTION: verifier_unicite_id
 # Vérifie qu'il n'y a pas de doublons sur l'identifiant.
 # ==============================================================================
-verifier_unicite_id <- function(df, col_id = "id_individu") {
+verifier_unicite_id <- function(df, col_id = "id_individu", nom_table = "") {
+
+  label <- if (nchar(nom_table) > 0) paste0("Unicité de ", col_id, " (", nom_table, ")")
+           else paste("Unicité de", col_id)
 
   if (!col_id %in% names(df)) {
     return(data.frame(
-      controle = "Unicité ID",
+      controle = label,
       statut   = "Non applicable",
       detail   = paste("Colonne", col_id, "absente")
     ))
@@ -126,7 +129,7 @@ verifier_unicite_id <- function(df, col_id = "id_individu") {
   n_doublons <- sum(duplicated(df[[col_id]], incomparables = NA))
 
   data.frame(
-    controle = paste("Unicité de", col_id),
+    controle = label,
     statut   = ifelse(n_doublons == 0, "OK", "Anomalie"),
     detail   = sprintf("%d doublon(s) détecté(s)", n_doublons),
     stringsAsFactors = FALSE
@@ -236,8 +239,8 @@ produire_qaqc <- function(df_individus, df_menages,
 
   if (verbose) message("[04_qaqc] Contrôles de cohérence...")
   controles <- dplyr::bind_rows(
-    verifier_unicite_id(df_individus, "id_individu"),
-    verifier_unicite_id(df_menages,   "id_individu"),
+    verifier_unicite_id(df_individus, "id_individu", "individus"),
+    verifier_unicite_id(df_menages,   "id_individu", "ménages"),
     verifier_coherence_ages(df_individus)
   )
 
