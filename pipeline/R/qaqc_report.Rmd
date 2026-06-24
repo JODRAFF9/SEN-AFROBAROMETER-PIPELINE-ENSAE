@@ -36,6 +36,8 @@ library(kableExtra)
 
 qaqc <- params$qaqc
 
+options(OutDec = ",")
+
 # Formatage à la française (virgule décimale)
 fnum <- function(x, d = 2) formatC(as.numeric(x), digits = d, format = "f",
                                     decimal.mark = ",", big.mark = " ")
@@ -372,11 +374,17 @@ if (!is.null(qaqc$outliers) && nrow(qaqc$outliers) > 0) {
 
   # Tableau
   df_out |>
-    dplyr::mutate(pct = fpct(pct, d = 2)) |>
+    dplyr::mutate(
+      pct      = fpct(pct, d = 2),
+      min_val  = fnum(min_val, 2),
+      max_val  = fnum(max_val, 2),
+      borne_inf = fnum(borne_inf, 2),
+      borne_sup = fnum(borne_sup, 2)
+    ) |>
     dplyr::rename(Variable = variable, `N outliers` = n_outliers, `%` = pct,
                   Min = min_val, Max = max_val,
                   `Borne inf.` = borne_inf, `Borne sup.` = borne_sup) |>
-    kable(caption = "Détail des outliers détectés (méthode IQR × 3)") |>
+    kable(format = "html", caption = "Détail des outliers détectés (méthode IQR × 3)") |>
     kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
 
 } else {
@@ -538,10 +546,11 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
   df_isic <- qaqc$estimations$distribution_isic
   if (!is.null(df_isic) && nrow(df_isic) > 0) {
     df_isic |>
+      dplyr::mutate(pourcentage = fnum(pourcentage, 1)) |>
       dplyr::select(Section = isic_section_principal,
                     `Libellé ISIC Rev 4` = isic_libelle_principal,
                     Effectif = effectif, `%` = pourcentage) |>
-      kable(caption = "Distribution sectorielle — ISIC Rev 4") |>
+      kable(format = "html", caption = "Distribution sectorielle — ISIC Rev 4") |>
       kable_styling(bootstrap_options = c("striped","hover"), full_width = TRUE)
   }
 }
