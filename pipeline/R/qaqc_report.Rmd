@@ -188,33 +188,20 @@ mc(n_anom,   "Anomalies",               ifelse(!is.na(n_anom)   && n_anom   > 0,
 cat('</div>\n')
 ```
 
-## Résumé statistique de la base brute
+## Taille des bases
 
-Le tableau ci-dessous présente un résumé statistique de la base brute importée avant tout recodage : valeurs min/max, médiane, moyenne et nombre de valeurs manquantes pour chaque variable numérique de la base.
+Ce tableau indique le nombre d'observations et de variables dans chaque base consolidée produite par le pipeline.
 
-```{r summary-base}
-if (!is.null(base) && ncol(base) > 0) {
-  vars_num <- dplyr::select(base, where(is.numeric))
-  if (ncol(vars_num) > 0) {
-    sum_df <- purrr::map_dfr(names(vars_num), function(v) {
-      x <- vars_num[[v]]
-      data.frame(
-        Variable  = v,
-        N         = length(x),
-        Manquants = sum(is.na(x)),
-        Min       = fnum(min(x, na.rm = TRUE), 2),
-        Mediane   = fnum(median(x, na.rm = TRUE), 2),
-        Moyenne   = fnum(mean(x, na.rm = TRUE), 2),
-        Max       = fnum(max(x, na.rm = TRUE), 2),
-        stringsAsFactors = FALSE
-      )
-    })
-    sum_df |>
-      kable(format = "html", caption = "Statistiques descriptives — Base brute (variables numeriques)",
-            align = c("l","r","r","r","r","r","r")) |>
-      kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
-  }
-}
+```{r taille-bases}
+data.frame(
+  Base          = c("Individus", "Menages"),
+  Observations  = c(get_val("Observations individus"), get_val("Observations menages")),
+  Variables     = c(get_val("Variables individus"),    get_val("Variables menages"))
+) |>
+  kable(format = "html", caption = "Taille des bases consolidées",
+        align = c("l","r","r"),
+        col.names = c("Base", "Observations", "Variables")) |>
+  kable_styling(bootstrap_options = c("hover","condensed"), full_width = FALSE)
 ```
 
 ## Contrôles de cohérence
