@@ -139,10 +139,7 @@ h1, h2, h3 { color: #1A3A5C; }
 ```
 
 <div class="banner">
-
-
-  <h2 style="margin:0 0 8px;">Rapport QAQC &mdash; Afrobarometer S&eacute;n&eacute;gal</h2>
-  </div>
+  <h2>&#128202; Rapport QAQC — Afrobarometer Sénégal</h2>
   <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
   <p style="font-size:.88em; opacity:.85; margin-top:6px; line-height:1.8;">
     Ibrahim ADAM ALASSANE<br>
