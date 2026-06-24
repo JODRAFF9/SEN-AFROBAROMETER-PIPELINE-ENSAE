@@ -16,6 +16,7 @@ output:
 params:
   qaqc:  NULL
   base:  NULL
+  meta:  NULL
   round: 9
   annee: 2022
 ---
@@ -37,6 +38,7 @@ library(kableExtra)
 
 qaqc <- params$qaqc
 base <- params$base
+meta <- params$meta
 
 options(OutDec = ",")
 
@@ -190,15 +192,22 @@ cat('</div>\n')
 
 ## Taille des bases
 
-Ce tableau indique le nombre d'observations et de variables dans chaque base consolidée produite par le pipeline.
+Ce tableau compare la taille de la base brute importée et des bases consolidées produites par le pipeline après traitement.
 
 ```{r taille-bases}
+n_obs_brute  <- if (!is.null(meta)) meta$n_obs_brute  else NA
+n_vars_brute <- if (!is.null(meta)) meta$n_vars_brute else NA
+
 data.frame(
-  Base          = c("Individus", "Menages"),
-  Observations  = c(get_val("Observations individus"), get_val("Observations menages")),
-  Variables     = c(get_val("Variables individus"),    get_val("Variables menages"))
+  Base            = c("Base brute", "Individus (traitée)", "Ménages (traitée)"),
+  Observations    = c(n_obs_brute,
+                      get_val("Observations individus"),
+                      get_val("Observations ménages")),
+  Variables       = c(n_vars_brute,
+                      get_val("Variables individus"),
+                      get_val("Variables ménages"))
 ) |>
-  kable(format = "html", caption = "Taille des bases consolidées",
+  kable(format = "html", caption = "Taille des bases — brute vs traitées",
         align = c("l","r","r"),
         col.names = c("Base", "Observations", "Variables")) |>
   kable_styling(bootstrap_options = c("hover","condensed"), full_width = FALSE)

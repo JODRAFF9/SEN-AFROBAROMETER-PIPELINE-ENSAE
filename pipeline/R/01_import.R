@@ -200,11 +200,13 @@ lancer_import <- function(dossier_input = PATHS$input,
     diagnostic  = diagnostic,
     outliers    = outliers,
     meta = list(
-      n_obs      = nrow(base_propre),
-      n_vars     = ncol(base_propre),
-      round      = ROUND$numero,
-      annee      = ROUND$annee,
-      horodatage = Sys.time()
+      n_obs_brute  = nrow(base_brute),
+      n_vars_brute = ncol(base_brute),
+      n_obs        = nrow(base_propre),
+      n_vars       = ncol(base_propre),
+      round        = ROUND$numero,
+      annee        = ROUND$annee,
+      horodatage   = Sys.time()
     )
   )
 }

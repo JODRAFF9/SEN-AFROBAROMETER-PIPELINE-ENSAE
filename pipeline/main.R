@@ -84,7 +84,7 @@ message(paste(rep("-", 40), collapse = ""))
 chemins <- lancer_export(table_individus, table_menages, rapport_qaqc, verbose = TRUE)
 
 # Rapport QAQC HTML
-chemin_html <- generer_rapport_html(rapport_qaqc, base = base, verbose = TRUE)
+chemin_html <- generer_rapport_html(rapport_qaqc, base = base, meta = res_import$meta, verbose = TRUE)
 
 # ── Résumé final ──────────────────────────────────────────────────────────────
 duree <- round(as.numeric(difftime(Sys.time(), ts_debut, units = "secs")), 1)
