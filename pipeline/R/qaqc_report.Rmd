@@ -641,20 +641,6 @@ if (!is.null(qaqc$estimations$distribution_privation)) {
 }
 ```
 
-# Annexe — Tableau de bord complet
-
-Le tableau ci-dessous centralise tous les indicateurs clés du pipeline en un seul endroit : taille des tables, nombre de variables, alertes qualité, round et année d'enquête.
-
-```{r annexe-resume}
-if (!is.null(qaqc$resume_global)) {
-  qaqc$resume_global |>
-    dplyr::rename(Indicateur = indicateur, Valeur = valeur) |>
-    kable(format = "html", caption = "Résumé complet du pipeline",
-          align = c("l","r")) |>
-    kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = FALSE)
-}
-```
-
 ---
 
 <div style="text-align:center; color:#546E7A; font-size:.88em; margin-top:30px; padding-top:16px; border-top:1px solid #ddd;">
