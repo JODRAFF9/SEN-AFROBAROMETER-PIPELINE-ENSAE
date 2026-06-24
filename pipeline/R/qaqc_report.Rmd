@@ -152,11 +152,6 @@ h1, h2, h3 { color: #1A3A5C; }
     Sié Rachid TRAORE<br>
     <em>Superviseur : M. MBodj</em>
   </p>
-  <p>
-    <span class="badge">&#128197; Round `r params$round`</span>
-    <span class="badge">&#128197; `r params$annee`</span>
-    <span class="badge">&#127480;&#127475; Sénégal</span>
-  </p>
 </div>
 
 # Vue d'ensemble
