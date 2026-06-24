@@ -17,6 +17,7 @@ source(here("pipeline", "R", "utils.R"))
 # Nécessite les packages : rmarkdown, knitr, kableExtra, ggplot2
 # ==============================================================================
 generer_rapport_html <- function(qaqc,
+                                 base        = NULL,
                                  chemin_rmd = here("pipeline", "R", "qaqc_report.Rmd"),
                                  dossier_qaqc = PATHS$qaqc,
                                  verbose = TRUE) {
@@ -49,7 +50,7 @@ generer_rapport_html <- function(qaqc,
   rmarkdown::render(
     input       = chemin_rmd,
     output_file = chemin_h,
-    params      = list(qaqc = qaqc, round = ROUND$numero, annee = ROUND$annee),
+    params      = list(qaqc = qaqc, base = base, round = ROUND$numero, annee = ROUND$annee),
     quiet       = !verbose,
     envir       = new.env(parent = globalenv())
   )

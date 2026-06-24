@@ -15,6 +15,7 @@ output:
     self_contained: true
 params:
   qaqc:  NULL
+  base:  NULL
   round: 9
   annee: 2022
 ---
@@ -35,6 +36,7 @@ library(knitr)
 library(kableExtra)
 
 qaqc <- params$qaqc
+base <- params$base
 
 options(OutDec = ",")
 
@@ -157,16 +159,16 @@ h1, h2, h3 { color: #1A3A5C; }
 
 ## Indicateurs clés
 
-Les cartes ci-dessous résument en un coup d'œil la taille de la base traitée, le nombre de variables disponibles et les principaux signaux d'alerte qualité détectés par le pipeline.
+Les cartes ci-dessous résument en un coup d'oeil la taille de la base traitée, le nombre de variables disponibles et les principaux signaux d'alerte qualité détectés par le pipeline.
 
 ```{r kpis, results='asis'}
 n_ind    <- get_val("Observations individus")
-n_men    <- get_val("Observations ménages")
+n_men    <- get_val("Observations menages")
 n_vind   <- get_val("Variables individus")
-n_vmen   <- get_val("Variables ménages")
+n_vmen   <- get_val("Variables menages")
 n_alerte <- get_val("Variables NA Alerte (>20%)")
 n_crit   <- get_val("Variables NA Critique (>50%)")
-n_anom   <- get_val("Contrôles avec anomalies")
+n_anom   <- get_val("Controles avec anomalies")
 
 mc <- function(val, lbl, cls) {
   cat('<div class="metric-card', cls, '">',
@@ -184,6 +186,35 @@ mc(n_alerte, "Alertes NA (&gt;20 %)",   ifelse(!is.na(n_alerte) && n_alerte > 0,
 mc(n_crit,   "Critiques NA (&gt;50 %)", ifelse(!is.na(n_crit)   && n_crit   > 0, "mc-red",    "mc-green"))
 mc(n_anom,   "Anomalies",               ifelse(!is.na(n_anom)   && n_anom   > 0, "mc-red",    "mc-green"))
 cat('</div>\n')
+```
+
+## Aperçu de la base brute
+
+Le tableau ci-dessous présente un résumé statistique de la base brute importée avant tout recodage : valeurs min/max, médiane, moyenne et nombre de valeurs manquantes pour chaque variable numérique.
+
+```{r summary-base}
+if (!is.null(base) && ncol(base) > 0) {
+  vars_num <- dplyr::select(base, where(is.numeric))
+  if (ncol(vars_num) > 0) {
+    sum_df <- purrr::map_dfr(names(vars_num), function(v) {
+      x <- vars_num[[v]]
+      data.frame(
+        Variable  = v,
+        N         = length(x),
+        Manquants = sum(is.na(x)),
+        Min       = fnum(min(x, na.rm = TRUE), 2),
+        Mediane   = fnum(median(x, na.rm = TRUE), 2),
+        Moyenne   = fnum(mean(x, na.rm = TRUE), 2),
+        Max       = fnum(max(x, na.rm = TRUE), 2),
+        stringsAsFactors = FALSE
+      )
+    })
+    sum_df |>
+      kable(format = "html", caption = "Statistiques descriptives — Base brute (variables numeriques)",
+            align = c("l","r","r","r","r","r","r")) |>
+      kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
+  }
+}
 ```
 
 ## Contrôles de cohérence
