@@ -33,7 +33,6 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
-library(base64enc)
 
 qaqc <- params$qaqc
 
@@ -139,18 +138,10 @@ h1, h2, h3 { color: #1A3A5C; }
 .table-hover tbody tr:hover { background: #EBF2FA; }
 ```
 
-```{r banniere, results='asis', echo=FALSE}
-logo_path <- here::here("pipeline", "R", "img", "image-1782332008765.png")
-logo_tag  <- if (file.exists(logo_path)) {
-  b64 <- base64enc::base64encode(logo_path)
-  paste0('<img src="data:image/png;base64,', b64,
-         '" style="height:60px; border-radius:6px;">')
-} else ""
-
-cat('
+<!-- Bannière -->
 <div class="banner">
   <div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
-    ', logo_tag, '
+    <img src="img/image-1782332008765.png" style="height:60px; border-radius:6px;">
     <h2 style="margin:0;">Rapport QAQC — Afrobarometer Sénégal</h2>
   </div>
   <p>Pipeline de traitement des données d’opinion — ENSAE Dakar</p>
@@ -165,8 +156,6 @@ cat('
     <em>Superviseur : M. MBodj</em>
   </p>
 </div>
-')
-```
 
 # Vue d'ensemble
 
