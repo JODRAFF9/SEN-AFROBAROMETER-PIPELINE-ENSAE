@@ -161,6 +161,8 @@ h1, h2, h3 { color: #1A3A5C; }
 
 ## Indicateurs clés
 
+Les cartes ci-dessous résument en un coup d'œil la taille de la base traitée, le nombre de variables disponibles et les principaux signaux d'alerte qualité détectés par le pipeline.
+
 ```{r kpis, results='asis'}
 n_ind    <- get_val("Observations individus")
 n_men    <- get_val("Observations ménages")
@@ -213,6 +215,8 @@ cat(sprintf('
 
 ## Contrôles de cohérence
 
+Le tableau suivant présente les résultats des vérifications automatiques appliquées à la base : unicité des identifiants individus et ménages, et cohérence des âges déclarés (plage attendue : 15–120 ans).
+
 ```{r controles}
 if (!is.null(qaqc$controles) && nrow(qaqc$controles) > 0) {
   df_ctrl <- qaqc$controles
@@ -233,6 +237,8 @@ if (!is.null(qaqc$controles) && nrow(qaqc$controles) > 0) {
 # Qualité des données
 
 ## Synthèse des valeurs manquantes
+
+Le graphique ci-dessous classe chaque variable des deux tables selon son niveau de complétude : **OK** (< 5 % de NA), **Faible** (5–20 %), **Alerte** (20–50 %) ou **Critique** (> 50 %). Il permet d'identifier rapidement les variables posant problème.
 
 ```{r na-synthese}
 if (!is.null(qaqc$rapport_na) && nrow(qaqc$rapport_na) > 0) {
@@ -264,6 +270,8 @@ if (!is.null(qaqc$rapport_na) && nrow(qaqc$rapport_na) > 0) {
 ```
 
 ## Variables à risque {.tabset}
+
+Les onglets ci-dessous détaillent, pour chaque table, uniquement les variables présentant au moins une valeur manquante, triées du taux le plus élevé au plus faible.
 
 ### Table individus
 
@@ -323,6 +331,8 @@ if (!is.null(qaqc$rapport_na)) {
 
 ### Graphique comparatif
 
+Ce graphique compare visuellement les taux de NA de toutes les variables (individus et ménages). Les lignes en pointillés indiquent les seuils d'alerte (20 %) et critique (50 %).
+
 ```{r na-graphique, fig.height=7}
 if (!is.null(qaqc$rapport_na)) {
   df_na_plot <- qaqc$rapport_na |>
@@ -361,6 +371,8 @@ if (!is.null(qaqc$rapport_na)) {
 ```
 
 ## Valeurs aberrantes
+
+Les valeurs aberrantes sont détectées par la méthode IQR × 3 : toute observation inférieure à Q1 − 3×IQR ou supérieure à Q3 + 3×IQR est signalée. Le graphique et le tableau ci-dessous listent les variables numériques concernées.
 
 ```{r outliers, results='asis', fig.height=4}
 if (!is.null(qaqc$outliers) && nrow(qaqc$outliers) > 0) {
@@ -405,6 +417,8 @@ Les statistiques suivantes sont des **estimations primaires** calculées après 
 
 ### Genre
 
+Ce graphique montre la répartition des répondants selon le genre. Il permet de vérifier l'équilibre de l'échantillon entre hommes et femmes.
+
 ```{r est-genre, fig.height=3.5}
 if (!is.null(qaqc$estimations$distribution_genre)) {
   df_g <- qaqc$estimations$distribution_genre |>
@@ -424,6 +438,8 @@ if (!is.null(qaqc$estimations$distribution_genre)) {
 
 ### Niveau d'instruction
 
+Ce graphique présente la distribution des niveaux d'éducation atteints par les répondants, du sans-instruction au supérieur, permettant d'apprécier le profil scolaire de l'échantillon.
+
 ```{r est-educ, fig.height=5}
 if (!is.null(qaqc$estimations$distribution_education)) {
   df_e <- qaqc$estimations$distribution_education |>
@@ -442,6 +458,8 @@ if (!is.null(qaqc$estimations$distribution_education)) {
 
 ### Milieu de résidence
 
+Ce graphique compare la part des répondants résidant en milieu urbain versus rural, conformément à la stratification de l'enquête Afrobarometer.
+
 ```{r est-milieu, fig.height=3}
 if (!is.null(qaqc$estimations$distribution_milieu)) {
   df_m <- qaqc$estimations$distribution_milieu |>
@@ -459,6 +477,8 @@ if (!is.null(qaqc$estimations$distribution_milieu)) {
 ```
 
 ## Couverture géographique
+
+Ce graphique montre le nombre de répondants par région administrative du Sénégal. La couleur indique la densité de l'échantillon : faible (bleu clair), moyen ou fort (bleu foncé), afin de repérer les régions sous-représentées.
 
 ```{r est-region, fig.height=5.5}
 if (!is.null(qaqc$estimations$distribution_region)) {
@@ -496,6 +516,8 @@ if (!is.null(qaqc$estimations$distribution_region)) {
 
 ### Statut d'emploi
 
+Ce graphique présente la distribution des répondants selon leur situation vis-à-vis de l'emploi (salarié, indépendant, sans emploi, inactif, etc.), telle que déclarée lors de l'enquête.
+
 ```{r est-emploi, fig.height=4}
 if (!is.null(qaqc$estimations$distribution_emploi)) {
   df_emp <- qaqc$estimations$distribution_emploi |>
@@ -515,6 +537,8 @@ if (!is.null(qaqc$estimations$distribution_emploi)) {
 ```
 
 ### Secteur ISIC Rev 4
+
+Ce graphique classe les répondants en emploi selon le secteur d'activité de leur occupation principale, conformément à la Classification internationale type des industries (ISIC Révision 4).
 
 ```{r est-isic, fig.height=5}
 if (!is.null(qaqc$estimations$distribution_isic) &&
@@ -547,6 +571,8 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
 ```
 
 ### Score d'actifs
+
+Les cartes ci-dessous résument les statistiques descriptives du score d'actifs, qui mesure le nombre de biens durables possédés par le répondant (de 0 à 6). Ce score est un proxy du niveau de vie du ménage.
 
 ```{r est-actifs, results='asis'}
 if (!is.null(qaqc$estimations$score_actifs_stats)) {
@@ -582,6 +608,8 @@ if (!is.null(qaqc$estimations$score_actifs_stats)) {
 </div>
 
 ## Conditions de vie des ménages
+
+Les indicateurs et le graphique suivants décrivent l'indice de privation composite des ménages, construit à partir de cinq dimensions (nourriture, eau, soins, combustible, revenus). Chaque dimension est comptée comme une privation si le répondant déclare en manquer au moins « quelques fois » dans l'année.
 
 ```{r est-privation, results='asis', fig.height=4}
 if (!is.null(qaqc$estimations$indice_privation_menages)) {
@@ -647,6 +675,8 @@ if (!is.null(qaqc$estimations$distribution_privation)) {
 ```
 
 # Annexe — Tableau de bord complet
+
+Le tableau ci-dessous centralise tous les indicateurs clés du pipeline en un seul endroit : taille des tables, nombre de variables, alertes qualité, round et année d'enquête.
 
 ```{r annexe-resume}
 if (!is.null(qaqc$resume_global)) {
