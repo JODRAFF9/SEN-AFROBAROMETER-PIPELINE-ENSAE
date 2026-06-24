@@ -206,7 +206,7 @@ if (!is.null(qaqc$controles) && nrow(qaqc$controles) > 0) {
       )
     ) |>
     dplyr::select(Contrôle = controle, Statut, Détail = detail) |>
-    kable(escape = FALSE, caption = "Résultats des contrôles de cohérence") |>
+    kable(format = "html", escape = FALSE, caption = "Résultats des contrôles de cohérence") |>
     kable_styling(bootstrap_options = c("hover", "condensed"), full_width = TRUE)
 }
 ```
@@ -273,7 +273,7 @@ if (!is.null(qaqc$rapport_na)) {
                     `N manquant` = n_na, `% NA`, Statut)
 
     df_ind_show |>
-      kable(escape = FALSE, caption = "Complétude — Table individus") |>
+      kable(format = "html", escape = FALSE, caption = "Complétude — Table individus") |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
 }
@@ -300,7 +300,7 @@ if (!is.null(qaqc$rapport_na)) {
       ) |>
       dplyr::select(Variable = variable, `N total` = n_total,
                     `N manquant` = n_na, `% NA`, Statut) |>
-      kable(escape = FALSE, caption = "Complétude — Table ménages") |>
+      kable(format = "html", escape = FALSE, caption = "Complétude — Table ménages") |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
 }
