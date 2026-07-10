@@ -1,5 +1,5 @@
 ---
-title: "Rapport QAQC — Afrobarometer Sénégal"
+title: "Rapport QAQC - Afrobarometer Sénégal"
 subtitle: "Round `r params$round` · `r params$annee` · Pipeline ENSAE Dakar"
 output:
   html_document:
@@ -143,8 +143,8 @@ h1, h2, h3 { color: #1A3A5C; }
 ```
 
 <div class="banner">
-  <h2>&#128202; Rapport QAQC — Afrobarometer Sénégal</h2>
-  <p>Pipeline de traitement des données d'opinion — ENSAE Dakar</p>
+  <h2>&#128202; Rapport QAQC - Afrobarometer Sénégal</h2>
+  <p>Pipeline de traitement des données d'opinion - ENSAE Dakar</p>
   <p style="font-size:.88em; opacity:.85; margin-top:6px; line-height:1.8;">
     Ibrahim ADAM ALASSANE<br>
     Moussa DIAKITE<br>
@@ -176,7 +176,7 @@ data.frame(
                       get_val("Variables individus"),
                       get_val("Variables ménages"))
 ) |>
-  kable(format = "html", caption = "Taille des bases — brute vs traitées",
+  kable(format = "html", caption = "Taille des bases - brute vs traitées",
         align = c("l","r","r"),
         col.names = c("Base", "Observations", "Variables")) |>
   kable_styling(bootstrap_options = c("hover","condensed"), full_width = FALSE)
@@ -297,7 +297,7 @@ if (!is.null(qaqc$rapport_na)) {
                     `N manquant` = n_na, `% NA`, Statut)
 
     df_ind_show |>
-      kable(format = "html", escape = FALSE, caption = "Complétude — Table individus",
+      kable(format = "html", escape = FALSE, caption = "Complétude - Table individus",
             align = c("l","r","r","r","c")) |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
@@ -325,7 +325,7 @@ if (!is.null(qaqc$rapport_na)) {
       ) |>
       dplyr::select(Variable = variable, `N total` = n_total,
                     `N manquant` = n_na, `% NA`, Statut) |>
-      kable(format = "html", escape = FALSE, caption = "Complétude — Table ménages",
+      kable(format = "html", escape = FALSE, caption = "Complétude - Table ménages",
             align = c("l","r","r","r","c")) |>
       kable_styling(bootstrap_options = c("striped","hover","condensed"), full_width = TRUE)
   }
@@ -562,7 +562,7 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
               hjust = -0.1, size = 3.2) +
     coord_flip() +
     scale_y_continuous(limits = c(0, max(df_isic$effectif) * 1.4)) +
-    labs(title = "Secteur d'activité — Classification ISIC Rev 4",
+    labs(title = "Secteur d'activité - Classification ISIC Rev 4",
          subtitle = "Répondants en emploi uniquement",
          x = NULL, y = "Effectif") +
     theme_qaqc
@@ -575,7 +575,7 @@ if (!is.null(qaqc$estimations$distribution_isic) &&
       dplyr::select(Section = isic_section_principal,
                     `Libellé ISIC Rev 4` = isic_libelle_principal,
                     Effectif = effectif, `%` = pourcentage) |>
-      kable(format = "html", caption = "Distribution sectorielle — ISIC Rev 4",
+      kable(format = "html", caption = "Distribution sectorielle - ISIC Rev 4",
             align = c("c","l","r","r")) |>
       kable_styling(bootstrap_options = c("striped","hover"), full_width = TRUE)
   }
@@ -671,7 +671,7 @@ if (!is.null(qaqc$estimations$distribution_privation)) {
 
 <div style="text-align:center; color:#546E7A; font-size:.88em; margin-top:30px; padding-top:16px; border-top:1px solid #ddd;">
   <strong>Pipeline Afrobarometer Sénégal</strong> · ENSAE Dakar · ISE Fin de Formation<br>
-  Rapport généré automatiquement — Round `r params$round` (`r params$annee`)<br>
+  Rapport généré automatiquement - Round `r params$round` (`r params$annee`)<br>
   <strong>Groupe :</strong> Ibrahim ADAM ALASSANE · Moussa DIAKITE · Fallou NGOM · Cheikh Sadibou NGOM · Gnalen SANGARE · Seman Giovanni Jocelyn GADO · Sié Rachid TRAORE<br>
   <strong>Superviseur :</strong> M. MBodj<br>
   <em>Données : <a href="https://www.afrobarometer.org/countries/senegal/" target="_blank">Afrobarometer</a></em>
