@@ -6,8 +6,8 @@
 library(dplyr)
 library(here)
 
-source(here("pipeline", "R", "config.R"))
-source(here("pipeline", "R", "utils.R"))
+source(here("R", "config.R"))
+source(here("R", "utils.R"))
 
 # Chargement conditionnel d'openxlsx pour le rapport QAQC
 charger_openxlsx <- function() {

@@ -10,7 +10,7 @@ library(tidyr)
 library(stringr)
 library(here)
 
-source(here("pipeline", "R", "config.R"))
+source(here("R", "config.R"))
 
 # ==============================================================================
 # FONCTION: importer_base

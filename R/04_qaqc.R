@@ -8,8 +8,8 @@ library(tidyr)
 library(purrr)
 library(here)
 
-source(here("pipeline", "R", "config.R"))
-source(here("pipeline", "R", "utils.R"))
+source(here("R", "config.R"))
+source(here("R", "utils.R"))
 
 # ==============================================================================
 # FONCTION: generer_rapport_html
@@ -19,7 +19,7 @@ source(here("pipeline", "R", "utils.R"))
 generer_rapport_html <- function(qaqc,
                                  base        = NULL,
                                  meta        = NULL,
-                                 chemin_rmd = here("pipeline", "R", "qaqc_report.Rmd"),
+                                 chemin_rmd = here("R", "qaqc_report.Rmd"),
                                  dossier_qaqc = PATHS$qaqc,
                                  verbose = TRUE) {
 

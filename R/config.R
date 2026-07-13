@@ -9,9 +9,9 @@ library(here)
 
 # ── Chemins ──────────────────────────────────────────────────────────────────
 PATHS <- list(
-  input  = here::here("pipeline", "input"),
-  output = here::here("pipeline", "output"),
-  qaqc   = here::here("pipeline", "output", "qaqc")
+  input  = here::here("input"),
+  output = here::here("output"),
+  qaqc   = here::here("output", "qaqc")
 )
 
 # ── Identifiant du round ──────────────────────────────────────────────────────

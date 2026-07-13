@@ -5,8 +5,8 @@
 library(dplyr)
 library(here)
 
-source(here("pipeline", "R", "config.R"))
-source(here("pipeline", "R", "utils.R"))
+source(here("R", "config.R"))
+source(here("R", "utils.R"))
 
 # ==============================================================================
 # FONCTION: extraire_profil_repondant_menage

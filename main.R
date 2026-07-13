@@ -33,13 +33,13 @@ if (length(packages_manquants) > 0) {
 library(here)
 
 # ── Chargement des modules ────────────────────────────────────────────────────
-source(here("pipeline", "R", "config.R"))
-source(here("pipeline", "R", "utils.R"))
-source(here("pipeline", "R", "01_import.R"))
-source(here("pipeline", "R", "02_individus.R"))
-source(here("pipeline", "R", "03_menages.R"))
-source(here("pipeline", "R", "04_qaqc.R"))
-source(here("pipeline", "R", "05_export.R"))
+source(here("R", "config.R"))
+source(here("R", "utils.R"))
+source(here("R", "01_import.R"))
+source(here("R", "02_individus.R"))
+source(here("R", "03_menages.R"))
+source(here("R", "04_qaqc.R"))
+source(here("R", "05_export.R"))
 
 # ==============================================================================
 # PIPELINE
