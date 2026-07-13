@@ -1,8 +1,8 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:009A44,50:1A3A5C,100:C8A951&text=SEN%20AFROBAROMETER%20PIPELINE&fontSize=36&fontColor=ffffff&fontAlignY=38&desc=Pipeline%20de%20donn%C3%A9es%20d%E2%80%99opinion%20%7C%20ENSAE%20Dakar&descSize=16&descAlignY=58&animation=fadeIn&section=header" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:009A44,50:FDEF42,100:E31B23&text=SEN%20AFROBAROMETER%20PIPELINE&fontSize=36&fontColor=ffffff&fontAlignY=38&desc=Pipeline%20de%20donn%C3%A9es%20d%E2%80%99opinion%20%7C%20ENSAE%20Dakar&descSize=16&descAlignY=58&animation=fadeIn&section=header" width="100%"/>
 
 <div align="center">
 
-![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=009A44&center=true&vCenter=true&width=700&lines=SEN+AFROBAROMETER+PIPELINE+%7C+ENSAE+Dakar;Ibrahim+ADAM+ALASSANE;Moussa+DIAKITE;Fallou+NGOM;Cheikh+Sadibou+NGOM;Gnalen+SANGARE;Seman+Giovanni+Jocelyn+GADO;Sie+Rachid+TRAORE;ISE+EN+FIN+DE+FORMATION+%7C+Superviseur+%3A+M.+MBodj)
+![Typing SVG](https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=E31B23&center=true&vCenter=true&width=700&lines=SEN+AFROBAROMETER+PIPELINE+%7C+ENSAE+Dakar;Ibrahim+ADAM+ALASSANE;Moussa+DIAKITE;Fallou+NGOM;Cheikh+Sadibou+NGOM;Gnalen+SANGARE;Seman+Giovanni+Jocelyn+GADO;Sie+Rachid+TRAORE;ISE+EN+FIN+DE+FORMATION+%7C+Superviseur+%3A+M.+MBodj)
 
 <br/>
 
@@ -344,4 +344,4 @@ Le rapport HTML genere automatiquement comprend :
   <sub>🎓 ENSAE Dakar - Formation ISE - Promotion 2022-2025</sub>
 </div>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:C8A951,50:1A3A5C,100:009A44&section=footer&reversal=false" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:E31B23,50:FDEF42,100:009A44&section=footer&reversal=false" width="100%"/>
