@@ -121,7 +121,7 @@ EXCL_VALS <- c(
 # ------------------------------------------------------------------------------
 # Theme ggplot
 # ------------------------------------------------------------------------------
-theme_afro <- function(base_size = 12) {
+theme_afro <- function(base_size = 11) {
   theme_minimal(base_size = base_size, base_family = "sans") +
     theme(
       plot.title       = element_text(colour = PAL$bleu, face = "bold",
@@ -461,12 +461,12 @@ ui <- page_navbar(
         card(
           full_screen = TRUE,
           card_header(icon("compass"), " Direction generale du pays (Q3)"),
-          plotOutput("plot_direction", height = 210)
+          plotOutput("plot_direction", height = 340)
         ),
         card(
           full_screen = TRUE,
           card_header(icon("chart-line"), " Perception economique - National vs Personnel (Q4A/Q4B)"),
-          plotOutput("plot_econ", height = 210)
+          plotOutput("plot_econ", height = 340)
         )
       ),
 
@@ -475,12 +475,12 @@ ui <- page_navbar(
         card(
           full_screen = TRUE,
           card_header(icon("map"), " Repartition des enquetes par region"),
-          plotOutput("plot_region", height = 290)
+          plotOutput("plot_region", height = 400)
         ),
         card(
           full_screen = TRUE,
           card_header(icon("users"), " Pyramide des ages par sexe"),
-          plotOutput("plot_pyramide", height = 290)
+          plotOutput("plot_pyramide", height = 400)
         )
       )
     )
@@ -504,25 +504,25 @@ ui <- page_navbar(
         width = 1/3,
         card(full_screen = TRUE,
              card_header(icon("utensils"), " Manque de nourriture (Q6A)"),
-             plotOutput("cv_q6a", height = 250)),
+             plotOutput("cv_q6a", height = 320)),
         card(full_screen = TRUE,
              card_header(icon("droplet"), " Manque d'eau potable (Q6B)"),
-             plotOutput("cv_q6b", height = 250)),
+             plotOutput("cv_q6b", height = 320)),
         card(full_screen = TRUE,
              card_header(icon("pills"), " Manque de medicaments (Q6C)"),
-             plotOutput("cv_q6c", height = 250))
+             plotOutput("cv_q6c", height = 320))
       ),
       layout_column_wrap(
         width = 1/3,
         card(full_screen = TRUE,
              card_header(icon("fire"), " Manque de combustible (Q6D)"),
-             plotOutput("cv_q6d", height = 250)),
+             plotOutput("cv_q6d", height = 320)),
         card(full_screen = TRUE,
              card_header(icon("coins"), " Manque de revenus (Q6E)"),
-             plotOutput("cv_q6e", height = 250)),
+             plotOutput("cv_q6e", height = 320)),
         card(full_screen = TRUE,
              card_header(icon("chart-bar"), " Score de privation par region"),
-             plotOutput("cv_priv_region", height = 250))
+             plotOutput("cv_priv_region", height = 320))
       )
     )
   ),
@@ -543,16 +543,16 @@ ui <- page_navbar(
         width = 1/2,
         card(full_screen = TRUE,
              card_header(icon("person-digging"), " Statut d'emploi salarie (Q93A)"),
-             plotOutput("ae_emploi", height = 300)),
+             plotOutput("ae_emploi", height = 380)),
         card(full_screen = TRUE,
              card_header(icon("star"), " Score d'actifs moyen par region"),
-             plotOutput("ae_actifs_region", height = 300))
+             plotOutput("ae_actifs_region", height = 380))
       ),
       layout_column_wrap(
         width = 1,
         card(full_screen = TRUE,
              card_header(icon("boxes-stacked"), " Possession de biens du menage (Q90A-F)"),
-             plotOutput("ae_biens", height = 300))
+             plotOutput("ae_biens", height = 340))
       )
     )
   ),
@@ -582,11 +582,11 @@ ui <- page_navbar(
             width = 1/2,
             card(
               card_header(icon("street-view"), " Insecurite dans le quartier (Q7A)"),
-              plotOutput("gs_insec_qrt", height = 270)
+              plotOutput("gs_insec_qrt", height = 340)
             ),
             card(
               card_header(icon("door-closed"), " Insecurite au domicile (Q7B)"),
-              plotOutput("gs_insec_dom", height = 270)
+              plotOutput("gs_insec_dom", height = 340)
             )
           )
         ),
@@ -595,11 +595,11 @@ ui <- page_navbar(
             width = 1/2,
             card(
               card_header(icon("user-shield"), " Corruption policiere percue (Q43C)"),
-              plotOutput("gs_corr_pol", height = 270)
+              plotOutput("gs_corr_pol", height = 340)
             ),
             card(
               card_header(icon("building-columns"), " Corruption des fonctionnaires (Q43E)"),
-              plotOutput("gs_corr_fonct", height = 270)
+              plotOutput("gs_corr_fonct", height = 340)
             )
           )
         )
@@ -643,12 +643,12 @@ ui <- page_navbar(
       card(
         full_screen = TRUE,
         card_header(icon("chart-area"), " Repartition des taux de valeurs manquantes"),
-        plotOutput("qaqc_na_hist", height = 250)
+        plotOutput("qaqc_na_hist", height = 320)
       ),
       card(
         full_screen = TRUE,
         card_header(icon("map-marker-alt"), " Couverture des 14 regions"),
-        plotOutput("qaqc_region_cov", height = 250)
+        plotOutput("qaqc_region_cov", height = 400)
       )
     )
   ),
@@ -831,7 +831,7 @@ server <- function(input, output, session) {
   output$plot_direction <- renderPlot({
     bar_prop(df_filt(), "direction_pays", "Direction generale du pays",
              fill_col = PAL$bleu)
-  }, res = 120)
+  }, res = 96)
 
   output$plot_econ <- renderPlot({
     d <- df_filt() |>
@@ -880,7 +880,7 @@ server <- function(input, output, session) {
       theme_afro() +
       theme(legend.position = "bottom", axis.text.x = element_blank()) +
       guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
-  }, res = 120)
+  }, res = 96)
 
   output$plot_region <- renderPlot({
     d <- df_filt() |>
@@ -905,7 +905,7 @@ server <- function(input, output, session) {
            x = NULL, y = NULL) +
       theme_afro() +
       theme(axis.text.x = element_blank())
-  }, res = 120)
+  }, res = 96)
 
   output$plot_pyramide <- renderPlot({
     d <- df_filt() |>
@@ -934,7 +934,7 @@ server <- function(input, output, session) {
       theme(legend.position = "bottom",
             panel.grid      = element_blank(),
             axis.text.x     = element_blank())
-  }, res = 120)
+  }, res = 96)
 
   # ---- Conditions de vie ---------------------------------------------------
   cv_plot <- function(col, titre) {
@@ -942,7 +942,7 @@ server <- function(input, output, session) {
       grp <- input$cv_group
       if (grp == "none") bar_prop(df_cv(), col, titre)
       else               bar_groupe(df_cv(), col, grp, titre)
-    }, res = 120)
+    }, res = 96)
   }
   output$cv_q6a <- cv_plot("Q6A", "Manque de nourriture")
   output$cv_q6b <- cv_plot("Q6B", "Manque d'eau potable")
@@ -954,7 +954,7 @@ server <- function(input, output, session) {
     dot_region(df_cv(), "score_privation",
                "Score de privation moyen par region (/ 4)",
                fill_col = PAL$rouge, ymax = 4)
-  }, res = 120)
+  }, res = 96)
 
   # ---- Actifs et Emploi ----------------------------------------------------
   output$ae_emploi <- renderPlot({
@@ -963,13 +963,13 @@ server <- function(input, output, session) {
       bar_prop(df_ae(), "statut_emploi", "Statut d'emploi salarie", fill_col = PAL$vert)
     else
       bar_groupe(df_ae(), "statut_emploi", grp, "Statut d'emploi salarie")
-  }, res = 120)
+  }, res = 96)
 
   output$ae_actifs_region <- renderPlot({
     dot_region(df_ae(), "score_actifs",
                "Score d'actifs moyen par region (/ 6)",
                fill_col = PAL$vert, ymax = 6, digits = 1)
-  }, res = 120)
+  }, res = 96)
 
   output$ae_biens <- renderPlot({
     biens_map <- c(Q90A = "Radio", Q90B = "Television", Q90C = "Voiture / Moto",
@@ -1036,21 +1036,21 @@ server <- function(input, output, session) {
         theme_afro() +
         theme(axis.text.x = element_blank())
     }
-  }, res = 120)
+  }, res = 96)
 
   # ---- Gouvernance et Securite ---------------------------------------------
   output$gs_insec_qrt <- renderPlot(
     bar_prop(df_gs(), "insecurite_quartier",
-             "Insecurite dans le quartier", fill_col = PAL$rouge), res = 120)
+             "Insecurite dans le quartier", fill_col = PAL$rouge), res = 96)
   output$gs_insec_dom <- renderPlot(
     bar_prop(df_gs(), "insecurite_maison",
-             "Insecurite au domicile", fill_col = PAL$rouge), res = 120)
+             "Insecurite au domicile", fill_col = PAL$rouge), res = 96)
   output$gs_corr_pol <- renderPlot(
     bar_prop(df_gs(), "corrup_police",
-             "Corruption policiere percue", fill_col = PAL$gris), res = 120)
+             "Corruption policiere percue", fill_col = PAL$gris), res = 96)
   output$gs_corr_fonct <- renderPlot(
     bar_prop(df_gs(), "corrup_fonct",
-             "Corruption des fonctionnaires percue", fill_col = PAL$gris), res = 120)
+             "Corruption des fonctionnaires percue", fill_col = PAL$gris), res = 96)
 
   # ---- Table brute ---------------------------------------------------------
   tbl_data <- reactive({
@@ -1154,7 +1154,7 @@ server <- function(input, output, session) {
            caption = CAPTION_STD, x = "Taux de NA (%)", y = "Nombre de variables") +
       theme_afro() +
       theme(panel.grid.major.y = element_line(colour = "#F3F4F6", linewidth = 0.4))
-  }, res = 120)
+  }, res = 96)
 
   output$qaqc_region_cov <- renderPlot({
     d <- DF |>
@@ -1182,7 +1182,7 @@ server <- function(input, output, session) {
       theme_afro() +
       theme(legend.position = "bottom", axis.text.x = element_blank()) +
       guides(colour = guide_legend(override.aes = list(size = 4)))
-  }, res = 120)
+  }, res = 96)
 
   # ---- Telechargement ------------------------------------------------------
   dl_handler <- function(data_fn) {
