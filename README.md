@@ -6,14 +6,14 @@
 
 <br/>
 
-[![License](https://img.shields.io/badge/licence-MIT-blue?style=for-the-badge)](LICENSE)
-[![R](https://img.shields.io/badge/R-%3E%3D%204.1-276DC3?style=for-the-badge&logo=r&logoColor=white)](https://www.r-project.org/)
-[![Afrobarometer](https://img.shields.io/badge/Afrobarometer-Round%209%20%C2%B7%202022-E87722?style=for-the-badge)](https://www.afrobarometer.org/countries/senegal/)
-[![ENSAE](https://img.shields.io/badge/ENSAE-Dakar-1A3A5C?style=for-the-badge)](https://www.ensae.sn/)
+[![License](https://img.shields.io/badge/licence-MIT-009A44?style=for-the-badge)](LICENSE)
+[![R](https://img.shields.io/badge/R-%3E%3D%204.1-E31B23?style=for-the-badge&logo=r&logoColor=white)](https://www.r-project.org/)
+[![Afrobarometer](https://img.shields.io/badge/Afrobarometer-Round%209%20%C2%B7%202022-FDEF42?style=for-the-badge&logoColor=black&labelColor=009A44)](https://www.afrobarometer.org/countries/senegal/)
+[![ENSAE](https://img.shields.io/badge/ENSAE-Dakar-009A44?style=for-the-badge)](https://www.ensae.sn/)
 
 </div>
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:009A44,50:FDEF42,100:E31B23" width="100%"/>
 
 ## A propos
 
@@ -21,7 +21,7 @@ Ce projet, realise dans le cadre de la formation **ISE (Ingenieurs Statisticiens
 
 Il produit deux tables analytiques structurees (**individus** et **menages**), des estimations ponderees avec intervalles de confiance, des indicateurs composites de bien-etre et de vulnerabilite, ainsi qu'un **rapport QAQC interactif en HTML**.
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:E31B23,50:FDEF42,100:009A44" width="100%"/>
 
 ## Schema du pipeline
 
@@ -126,14 +126,15 @@ flowchart TD
     style STEP8  fill:#F1F8E9,stroke:#558B2F,color:#33691E
 ```
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:009A44,50:FDEF42,100:E31B23" width="100%"/>
 
 ## Structure du projet
 
 ```
 SEN-AFROBAROMETER-PIPELINE-ENSAE/
 |
-+-- main.R                        <- Point d'entree unique du pipeline (7 etapes)
++-- main.R                        <- Point d'entree unique du pipeline (8 etapes)
++-- install_packages.R            <- Script d'installation des dependances
 |
 +-- input/
 |   +-- base.dta                  <- Base brute Afrobarometer (a deposer ici)
@@ -157,7 +158,7 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
     +-- qaqc_report.Rmd           <- Template rapport QAQC HTML
 ```
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:E31B23,50:FDEF42,100:009A44" width="100%"/>
 
 ## Demarrage rapide
 
@@ -222,7 +223,7 @@ output/
     +-- carte_panneau_complet.png        <- Toutes les cartes assemblees
 ```
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:009A44,50:FDEF42,100:E31B23" width="100%"/>
 
 ## Variables produites
 
@@ -269,7 +270,7 @@ output/
 
 </details>
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:E31B23,50:FDEF42,100:009A44" width="100%"/>
 
 ## Rapport QAQC
 
@@ -284,7 +285,7 @@ Le rapport HTML genere automatiquement comprend :
 | ✅ **Controles coherence** | Unicite identifiants, plages d'age |
 | 📈 **Estimations primaires** | Distributions genre, education, region, emploi, ISIC, privation |
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:009A44,50:FDEF42,100:E31B23" width="100%"/>
 
 ## Changer de round sans toucher au code
 
@@ -310,7 +311,7 @@ Le rapport HTML genere automatiquement comprend :
 
 > Les cellules laissees vides conservent automatiquement les noms du round precedent.
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:E31B23,50:FDEF42,100:009A44" width="100%"/>
 
 ## Source des donnees
 
@@ -318,7 +319,7 @@ Le rapport HTML genere automatiquement comprend :
 
 **Round 9 Senegal - 2022** : 1 200 repondants, 1 487 variables.
 
----
+<img src="https://capsule-render.vercel.app/api?type=soft&height=6&color=0:009A44,50:FDEF42,100:E31B23" width="100%"/>
 
 ## Equipe
 
@@ -336,12 +337,6 @@ Le rapport HTML genere automatiquement comprend :
 
 **Superviseur : M. MBodj - ENSAE Dakar**
 
-</div>
-
----
-
-<div align="center">
-  <sub>🎓 ENSAE Dakar - Formation ISE - Promotion 2022-2025</sub>
 </div>
 
 <img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=0:E31B23,50:FDEF42,100:009A44&section=footer&reversal=false" width="100%"/>
