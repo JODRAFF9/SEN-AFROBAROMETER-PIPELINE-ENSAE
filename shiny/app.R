@@ -122,20 +122,24 @@ EXCL_VALS <- c(
 theme_afro <- function(base_size = 12) {
   theme_minimal(base_size = base_size, base_family = "sans") +
     theme(
-      plot.title       = element_text(colour = PAL$bleu, face = "bold", size = base_size + 1),
+      plot.title       = element_text(colour = PAL$bleu, face = "bold", size = base_size + 1,
+                                      margin = margin(b = 4)),
       plot.subtitle    = element_text(colour = PAL$gris, size = base_size - 1),
-      plot.caption     = element_text(colour = "#9CA3AF", size = 8, hjust = 1),
+      plot.caption     = element_text(colour = "#9CA3AF", size = 7.5, hjust = 1,
+                                      margin = margin(t = 4)),
       axis.text        = element_text(colour = PAL$gris, size = base_size - 1),
       axis.title       = element_text(colour = PAL$gris, size = base_size - 1),
-      panel.grid.major = element_line(colour = "#E5E7EB", linewidth = 0.35),
+      panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      legend.position  = "right",
+      axis.line.x      = element_line(colour = "#D1D5DB", linewidth = 0.4),
+      legend.position  = "bottom",
       legend.title     = element_text(colour = PAL$gris, face = "bold", size = base_size - 2),
       legend.text      = element_text(colour = PAL$gris, size = base_size - 2),
+      legend.margin    = margin(t = 2),
       plot.background  = element_rect(fill = "white", colour = NA),
       panel.background = element_rect(fill = "white", colour = NA),
       strip.text       = element_text(colour = PAL$bleu, face = "bold"),
-      plot.margin      = margin(8, 12, 8, 8)
+      plot.margin      = margin(8, 16, 6, 8)
     )
 }
 
@@ -149,22 +153,23 @@ bar_prop <- function(df, var, titre, subtitle = "", fill_col = PAL$bleu) {
     dplyr::count(.data[[var]], name = "n") |>
     dplyr::mutate(
       pct = n / sum(n) * 100,
-      val = as.character(.data[[var]])
+      val = stringr::str_wrap(as.character(.data[[var]]), width = 30)
     )
 
   if (nrow(d) == 0) return(ggplot() + theme_void() +
     labs(title = "Aucune donnee disponible pour ce filtre"))
 
   ggplot(d, aes(x = reorder(val, pct), y = pct)) +
-    geom_col(fill = fill_col, width = 0.62, alpha = 0.9) +
+    geom_col(fill = fill_col, width = 0.55, alpha = 0.9) +
     geom_text(aes(label = paste0(round(pct, 1), "%")),
-              hjust = -0.12, size = 3.5, colour = PAL$gris, fontface = "bold") +
+              hjust = -0.1, size = 3.4, colour = "#374151", fontface = "bold") +
     coord_flip() +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.18)),
+    scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
                        labels = function(x) paste0(x, "%")) +
     labs(title = titre, subtitle = subtitle, caption = CAPTION_STD,
-         x = NULL, y = "% des repondants") +
-    theme_afro()
+         x = NULL, y = NULL) +
+    theme_afro() +
+    theme(axis.line.x = element_blank())
 }
 
 bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
@@ -185,19 +190,24 @@ bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
     tranche_age = "Tranche d'age",
     groupvar)
 
-  ggplot(d, aes(x = .data[[var]], y = pct,
+  d <- d |> dplyr::mutate(
+    val_wrap = stringr::str_wrap(as.character(.data[[var]]), width = 14)
+  )
+
+  ggplot(d, aes(x = val_wrap, y = pct,
                 fill = as.character(.data[[groupvar]]))) +
     geom_col(position = position_dodge(0.72), width = 0.62, alpha = 0.9) +
     geom_text(aes(label = paste0(round(pct, 0), "%")),
-              position = position_dodge(0.72), vjust = -0.4,
-              size = 3.0, colour = PAL$gris) +
+              position = position_dodge(0.72), vjust = -0.35,
+              size = 2.8, colour = PAL$gris) +
     scale_fill_manual(values = PAL_BARS, name = nom_grp) +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.18)),
+    scale_y_continuous(expand = expansion(mult = c(0, 0.2)),
                        labels = function(x) paste0(x, "%")) +
     labs(title = titre, subtitle = subtitle, caption = CAPTION_STD,
-         x = NULL, y = "% des repondants") +
+         x = NULL, y = NULL) +
     theme_afro() +
-    theme(axis.text.x = element_text(angle = 22, hjust = 1, size = 9))
+    theme(axis.text.x = element_text(size = 8, lineheight = 0.85),
+          legend.position = "bottom")
 }
 
 # Sidebar communes
@@ -736,30 +746,36 @@ server <- function(input, output, session) {
   }, res = 100)
 
   output$plot_econ <- renderPlot({
-    excl <- EXCL_VALS
     d <- df_filt() |>
       dplyr::select(econ_pays, econ_perso) |>
       tidyr::pivot_longer(everything(), names_to = "indicateur", values_to = "val") |>
-      dplyr::filter(!is.na(val), !as.character(val) %in% excl) |>
-      dplyr::mutate(indicateur = dplyr::recode(indicateur,
-        econ_pays   = "Economie nationale",
-        econ_perso  = "Conditions personnelles")) |>
-      dplyr::count(indicateur, val) |>
+      dplyr::filter(!is.na(val), !as.character(val) %in% EXCL_VALS) |>
+      dplyr::mutate(
+        indicateur = dplyr::recode(indicateur,
+          econ_pays  = "Economie\nnationale",
+          econ_perso = "Conditions\npersonnelles"),
+        val_wrap = stringr::str_wrap(as.character(val), width = 12)
+      ) |>
+      dplyr::count(indicateur, val_wrap) |>
       dplyr::group_by(indicateur) |>
       dplyr::mutate(pct = n / sum(n) * 100) |>
       dplyr::ungroup()
 
-    ggplot(d, aes(x = val, y = pct, fill = indicateur)) +
+    ggplot(d, aes(x = reorder(val_wrap, pct), y = pct, fill = indicateur)) +
       geom_col(position = position_dodge(0.72), width = 0.62, alpha = 0.9) +
+      geom_text(aes(label = paste0(round(pct, 0), "%")),
+                position = position_dodge(0.72), hjust = -0.1,
+                size = 3.0, colour = PAL$gris) +
       scale_fill_manual(
-        values = c("Economie nationale" = PAL$bleu, "Conditions personnelles" = PAL$vert),
+        values = c("Economie\nnationale" = PAL$bleu, "Conditions\npersonnelles" = PAL$vert),
         name   = NULL) +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.15)),
+      scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
                          labels = function(x) paste0(x, "%")) +
-      labs(title = "Perception economique", caption = CAPTION_STD,
-           x = NULL, y = "% des repondants") +
+      coord_flip() +
+      labs(title = "Perception economique (Q4A / Q4B)",
+           caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
-      theme(axis.text.x = element_text(angle = 20, hjust = 1, size = 9))
+      theme(legend.position = "bottom")
   }, res = 100)
 
   output$plot_region <- renderPlot({
@@ -770,13 +786,14 @@ server <- function(input, output, session) {
     ggplot(d, aes(x = reorder(region_lbl, pct), y = pct)) +
       geom_col(fill = PAL$bleu, width = 0.68, alpha = 0.88) +
       geom_text(aes(label = paste0(round(pct, 0), "%")),
-                hjust = -0.12, size = 3.2, colour = PAL$gris) +
+                hjust = -0.1, size = 3.2, colour = PAL$gris, fontface = "bold") +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.16)),
+      scale_y_continuous(expand = expansion(mult = c(0, 0.2)),
                          labels = function(x) paste0(x, "%")) +
       labs(title = "Repartition par region", caption = CAPTION_STD,
-           x = NULL, y = "%") +
-      theme_afro()
+           x = NULL, y = NULL) +
+      theme_afro() +
+      theme(axis.line.x = element_blank())
   }, res = 100)
 
   output$plot_pyramide <- renderPlot({
@@ -821,14 +838,15 @@ server <- function(input, output, session) {
       dplyr::summarise(priv_moy = mean(score_privation, na.rm = TRUE), .groups = "drop")
     ggplot(d, aes(x = reorder(region_lbl, priv_moy), y = priv_moy)) +
       geom_col(fill = PAL$rouge, alpha = 0.85, width = 0.68) +
-      geom_text(aes(label = round(priv_moy, 2)), hjust = -0.12,
-                size = 3.2, colour = PAL$gris) +
+      geom_text(aes(label = round(priv_moy, 2)), hjust = -0.1,
+                size = 3.2, colour = PAL$gris, fontface = "bold") +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.16)),
+      scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
                          limits = c(0, 4)) +
       labs(title = "Score de privation moyen par region (/ 4)",
-           caption = CAPTION_STD, x = NULL, y = "Score moyen") +
-      theme_afro()
+           caption = CAPTION_STD, x = NULL, y = NULL) +
+      theme_afro() +
+      theme(axis.line.x = element_blank())
   }, res = 100)
 
   # ---- Actifs et Emploi ----------------------------------------------------
@@ -847,13 +865,14 @@ server <- function(input, output, session) {
       dplyr::summarise(actifs_moy = mean(score_actifs, na.rm = TRUE), .groups = "drop")
     ggplot(d, aes(x = reorder(region_lbl, actifs_moy), y = actifs_moy)) +
       geom_col(fill = PAL$bleu, alpha = 0.87, width = 0.68) +
-      geom_text(aes(label = round(actifs_moy, 2)), hjust = -0.12,
-                size = 3.2, colour = PAL$gris) +
+      geom_text(aes(label = round(actifs_moy, 1)), hjust = -0.12,
+                size = 3.2, colour = PAL$gris, fontface = "bold") +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.16)), limits = c(0, 6)) +
+      scale_y_continuous(expand = expansion(mult = c(0, 0.2)), limits = c(0, 6)) +
       labs(title = "Score d'actifs moyen par region (/ 6)",
-           caption = CAPTION_STD, x = NULL, y = "Score moyen") +
-      theme_afro()
+           caption = CAPTION_STD, x = NULL, y = NULL) +
+      theme_afro() +
+      theme(axis.line.x = element_blank())
   }, res = 100)
 
   output$ae_biens <- renderPlot({
