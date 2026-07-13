@@ -1,10 +1,12 @@
 # ==============================================================================
 # CONFIG.R — Configuration centrale du pipeline Afrobarometer Sénégal
-# Adapte ce fichier pour chaque nouveau round sans toucher au reste du pipeline.
+# Pour un nouveau round : mettre à jour ROUND, FICHIER_BRUT, et remplir
+# la colonne "Variable nouveau round" dans input/variables_mapping.xlsx.
 # ==============================================================================
 
 # ── Packages utilitaires ──────────────────────────────────────────────────────
-if (!requireNamespace("here", quietly = TRUE)) install.packages("here")
+if (!requireNamespace("here",    quietly = TRUE)) install.packages("here")
+if (!requireNamespace("readxl",  quietly = TRUE)) install.packages("readxl")
 library(here)
 
 # ── Chemins ──────────────────────────────────────────────────────────────────
@@ -24,97 +26,96 @@ ROUND <- list(
 # ── Nom du fichier de données brutes ─────────────────────────────────────────
 FICHIER_BRUT <- "base.dta"
 
-# ── Colonne identifiant individu ──────────────────────────────────────────────
-# SbjNum est l'identifiant unique dans la base Afrobarometer Sénégal Round 9
-ID_INDIVIDU <- "SBJNUM"
+# ==============================================================================
+# LECTURE DU FICHIER DE MAPPING (input/variables_mapping.xlsx)
+# La colonne "Variable nouveau round" prend la priorité sur la colonne
+# "Variable round actuel" quand elle est renseignée.
+# ==============================================================================
+.chemin_mapping <- file.path(PATHS$input, "variables_mapping.xlsx")
 
-# ── Mapping des variables — DÉMOGRAPHIQUES ────────────────────────────────────
-# Basé sur la base réelle : SEN_R9 (1200 obs, 1487 variables)
+if (!file.exists(.chemin_mapping)) {
+  stop("Fichier de mapping introuvable : ", .chemin_mapping,
+       "\nCréez-le depuis le script utilitaire ou replacez-le dans input/.")
+}
+
+.mapping_vars <- readxl::read_excel(.chemin_mapping, sheet = "Variables",
+                                     col_types = "text")
+.mapping_mod  <- readxl::read_excel(.chemin_mapping, sheet = "Modalités",
+                                     col_types = "text")
+
+# Résoudre le nom effectif de chaque variable :
+# si "Variable nouveau round" est renseigné → on l'utilise, sinon on garde l'actuel
+.mapping_vars$var_effective <- ifelse(
+  !is.na(.mapping_vars[["Variable nouveau round  ✏️"]]) &
+    nchar(trimws(.mapping_vars[["Variable nouveau round  ✏️"]])) > 0,
+  trimws(.mapping_vars[["Variable nouveau round  ✏️"]]),
+  trimws(.mapping_vars[["Variable round actuel (R9)"]])
+)
+
+# Fonction helper interne : retrouve la variable effective par nom pipeline
+.v <- function(nom_pipeline) {
+  idx <- which(.mapping_vars[["Nom pipeline (R)"]] == nom_pipeline)
+  if (length(idx) == 0) stop("Variable introuvable dans le mapping : ", nom_pipeline)
+  toupper(.mapping_vars$var_effective[idx[1]])
+}
+
+# ── Identifiant individu ──────────────────────────────────────────────────────
+ID_INDIVIDU <- .v("id_individu")
+
+# ── Mapping des variables par groupe ─────────────────────────────────────────
 VARS_DEMO <- list(
-  age              = "Q1",       # Age du répondant (numérique continu)
-  genre            = "Q100",     # Sexe du Répondant (1=Homme, 2=Femme)
-  niveau_etudes    = "Q94",      # Plus haut niveau d'instruction
-  # Branche d'études : non présente explicitement dans cette base
-  # situation_matrim : non collectée dans ce round Afrobarometer
-  # lien_cm : Afrobarometer = 1 répondant / ménage, variable non présente
-  langue_domicile  = "Q2"        # Langue parlée à la maison (proxy identité)
+  age             = .v("age"),
+  genre           = .v("genre"),
+  niveau_etudes   = .v("niveau_etudes"),
+  langue_domicile = .v("langue_domicile")
 )
 
-# ── Mapping des variables — GÉOGRAPHIQUES ─────────────────────────────────────
 VARS_GEO <- list(
-  region      = "REGION",        # Région (660=Dakar...675=Ziguinchor)
-  departement = "CONSTITUTENCY", # Département/Circonscription
-  milieu      = "URBRUR",        # 1=Rural, 2=Urbain
-  commune     = "PSU1",          # Ville/Commune
-  arrondismt  = "PSU2"           # Arrondissement
+  region      = .v("region"),
+  departement = .v("departement"),
+  milieu      = .v("milieu"),
+  commune     = .v("commune"),
+  arrondismt  = .v("arrondismt")
 )
 
-# ── Mapping des variables — PROFIL EMPLOI ─────────────────────────────────────
 VARS_EMPLOI <- list(
-  statut_emploi_principal   = "Q93A",      # Travail salarié (0=Non/pas cherche, 1=Non/cherche, 2=Temps partiel, 3=Temps plein)
-  activite_principale       = "Q93B_YES",  # Activité principale (secteur -> ISIC)
-  activite_secondaire       = "Q93B_2",    # Dernière activité principale
-  # Revenus : Afrobarometer mesure la privation de revenus (Q6E), pas le montant
-  privation_revenus         = "Q6E"        # Manque de revenus en espèces (0=Jamais...4=Toujours)
+  statut_emploi_principal = .v("statut_emploi_principal"),
+  activite_principale     = .v("activite_principale"),
+  activite_secondaire     = .v("activite_secondaire"),
+  privation_revenus       = .v("privation_revenus")
 )
 
-# ── Mapping des variables — BIENS POSSÉDÉS ────────────────────────────────────
-# Q90X = 0 (personne), 1 (autre membre), 2 (répondant personnellement)
 VARS_BIENS <- list(
-  radio      = "Q90A",   # Radio
-  television = "Q90B",   # Télévision
-  vehicule   = "Q90C",   # Voiture ou moto
-  ordinateur = "Q90D",   # Ordinateur
-  telephone  = "Q90F",   # Téléphone portable
-  internet   = "Q90G"    # Accès internet sur téléphone
+  radio      = .v("radio"),
+  television = .v("television"),
+  vehicule   = .v("vehicule"),
+  ordinateur = .v("ordinateur"),
+  telephone  = .v("telephone"),
+  internet   = .v("internet")
 )
 
-# ── Mapping des variables — ACCÈS AUX SERVICES SOCIAUX ────────────────────────
 VARS_SERVICES <- list(
-  source_eau         = "Q91A",   # Source principale d'eau
-  assainissement     = "Q91B",   # Type de latrines
-  electricite_acces  = "Q92A",   # Accès à l'électricité (0=Non, 1=Oui)
-  electricite_freq   = "Q92B"    # Fréquence disponibilité électricité
+  source_eau        = .v("source_eau"),
+  assainissement    = .v("assainissement"),
+  electricite_acces = .v("electricite_acces"),
+  electricite_freq  = .v("electricite_freq")
 )
 
-# ── Mapping des variables — CONDITIONS DE VIE (privations) ────────────────────
-# Q6X : Au cours des 12 derniers mois, avez-vous manqué de X ?
-# 0=Jamais, 1=1-2 fois, 2=Quelques fois, 3=Plusieurs fois, 4=Toujours
 VARS_VIE_MENAGE <- list(
-  manque_nourriture  = "Q6A",
-  manque_eau         = "Q6B",
-  manque_soins       = "Q6C",
-  manque_combustible = "Q6D",
-  manque_revenus     = "Q6E"
+  manque_nourriture  = .v("manque_nourriture"),
+  manque_eau         = .v("manque_eau"),
+  manque_soins       = .v("manque_soins"),
+  manque_combustible = .v("manque_combustible"),
+  manque_revenus     = .v("manque_revenus")
 )
 
 # ── Mapping ISIC Rev 4 — codes secteur Afrobarometer → section ISIC ──────────
-# Q93B_yes / Q93B_2 : activité principale
 ISIC_MAPPING <- data.frame(
   code_afrobarometer = 0:21,
   isic_section = c(
-    NA,   # 0 = N'a jamais eu d'emploi
-    NA,   # 1 = Elève/étudiant
-    NA,   # 2 = Femme au ménage
-    "A",  # 3 = Agriculture/ferme/pêche/foresterie
-    "G",  # 4 = Commerçant/marchand ambulant/vendeur
-    "C",  # 5 = Artisan/métier qualifié
-    "O",  # 6 = Fonctionnaire de l'état / gouvernement
-    "O",  # 7 = Enseignant / travailleur de la santé (service public)
-    "Q",  # 8 = Travailleur du secteur de la santé
-    "P",  # 9 = Enseignant
-    "T",  # 10 = Employé de maison / travailleur domestique
-    "G",  # 11 = Commerce informel de détail
-    "F",  # 12 = Construction
-    "H",  # 13 = Transport
-    "I",  # 14 = Restauration/hôtellerie
-    "K",  # 15 = Banque/finance/assurance
-    "M",  # 16 = Professions libérales
-    "J",  # 17 = Informatique/technologie
-    "S",  # 18 = Autres services
-    "B",  # 19 = Mines/extractif
-    "D",  # 20 = Energie/électricité
-    "E"   # 21 = Eau/assainissement/environnement
+    NA, NA, NA,
+    "A", "G", "C", "O", "O", "Q", "P", "T",
+    "G", "F", "H", "I", "K", "M", "J", "S", "B", "D", "E"
   ),
   isic_libelle = c(
     "Non applicable (sans emploi)",
@@ -145,6 +146,12 @@ ISIC_MAPPING <- data.frame(
 
 # ── Codes numériques de non-réponse → NA ─────────────────────────────────────
 CODES_MANQUANTS_NUM <- c(7, 8, 9, 97, 98, 99, 997, 998, 999, 9995, 9997, 9998, 9999, -1, -99)
+
+# ── Labels de non-réponse → NA ───────────────────────────────────────────────
+CODES_MANQUANTS_LABEL <- c(
+  "Don't know", "Refused", "Missing", "Not asked", "Not applicable",
+  "Ne sait pas", "Refusé", "Manquant", "Non posée", "Non applicable"
+)
 
 # ── Seuils QAQC ──────────────────────────────────────────────────────────────
 SEUILS_QAQC <- list(
