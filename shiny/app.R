@@ -113,7 +113,9 @@ EXCL_VALS <- c(
   "Refuse de repondre [Ne pas lire]", "Je ne sais pas [Ne pas lire]",
   "Refuse de repondre", "Je ne sais pas",
   "Refuse de répondre [Ne pas lire]", "Je ne sais pas [Ne pas lire]",
-  "Refuse de répondre", "Je ne sais pas"
+  "Refuse de répondre", "Je ne sais pas",
+  "-1", "-99", "-98", "-97", "99", "98",
+  "Aucun contact [Ne pas lire]"
 )
 
 # ------------------------------------------------------------------------------
@@ -166,10 +168,12 @@ bar_prop <- function(df, var, titre, subtitle = "", fill_col = PAL$bleu) {
     coord_flip() +
     scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
                        labels = function(x) paste0(x, "%")) +
-    labs(title = titre, subtitle = subtitle, caption = CAPTION_STD,
+    labs(title = stringr::str_wrap(titre, width = 45),
+         subtitle = subtitle, caption = CAPTION_STD,
          x = NULL, y = NULL) +
     theme_afro() +
-    theme(axis.line.x = element_blank())
+    theme(axis.line.x = element_blank(),
+          plot.title = element_text(lineheight = 1.2))
 }
 
 bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
@@ -203,11 +207,13 @@ bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
     scale_fill_manual(values = PAL_BARS, name = nom_grp) +
     scale_y_continuous(expand = expansion(mult = c(0, 0.2)),
                        labels = function(x) paste0(x, "%")) +
-    labs(title = titre, subtitle = subtitle, caption = CAPTION_STD,
+    labs(title = stringr::str_wrap(titre, width = 45),
+         subtitle = subtitle, caption = CAPTION_STD,
          x = NULL, y = NULL) +
     theme_afro() +
     theme(axis.text.x = element_text(size = 8, lineheight = 0.85),
-          legend.position = "bottom")
+          legend.position = "bottom",
+          plot.title = element_text(lineheight = 1.2))
 }
 
 # Sidebar communes
