@@ -25,22 +25,24 @@ L'objectif est d'extraire, nettoyer et consolider les données brutes en **deux 
 ```
 SEN-AFROBAROMETER-PIPELINE-ENSAE/
 │
-├── pipeline/
-│   ├── main.R                  ← Point d'entrée unique du pipeline
-│   ├── input/                  ← Déposer la base brute ici (base.dta)
-│   ├── output/                 ← Tables consolidées et rapport QAQC générés
-│   └── R/
-│       ├── config.R            ← Mapping variables, ISIC Rev 4, seuils QAQC
-│       ├── 01_import.R         ← Import, nettoyage, détection outliers
-│       ├── 02_individus.R      ← Table individus consolidée
-│       ├── 03_menages.R        ← Table ménages consolidée
-│       ├── 04_qaqc.R           ← Contrôle qualité + estimations primaires
-│       ├── 05_export.R         ← Export CSV / Excel / HTML
-│       └── qaqc_report.Rmd     ← Template rapport QAQC HTML
+├── main.R                        ← Point d'entrée unique du pipeline
 │
-├── Section7.10/                ← Traitement section conditions de vie
-├── Section71.81B/              ← Traitement sections médias & influence étrangère
-└── Description_et_litige_foncier_et_la_corruption/
+├── input/
+│   ├── base.dta                  ← Base brute Afrobarometer (à déposer ici)
+│   └── variables_mapping.xlsx    ← Mapping variables & modalités (éditable par round)
+│
+├── output/                       ← Tables consolidées et rapport QAQC générés
+│   └── qaqc/
+│
+└── R/
+    ├── config.R                  ← Lit le mapping Excel, configure le pipeline
+    ├── utils.R                   ← Fonctions utilitaires partagées
+    ├── 01_import.R               ← Import, nettoyage, détection outliers
+    ├── 02_individus.R            ← Table individus consolidée
+    ├── 03_menages.R              ← Table ménages consolidée
+    ├── 04_qaqc.R                 ← Contrôle qualité + estimations primaires
+    ├── 05_export.R               ← Export CSV / Excel / HTML
+    └── qaqc_report.Rmd           ← Template rapport QAQC HTML
 ```
 
 ---
@@ -58,6 +60,7 @@ install.packages(c(
   "purrr",      # Programmation fonctionnelle
   "stringr",    # Traitement de chaînes
   "here",       # Chemins relatifs
+  "readxl",     # Lecture du fichier de mapping Excel
   "tibble",     # Tableaux modernes
   # Pour le rapport QAQC HTML (optionnel mais recommandé) :
   "rmarkdown",  # Génération HTML
@@ -74,10 +77,10 @@ install.packages(c(
 
 ### 1. Préparer les données
 
-Placer la base brute dans `pipeline/input/` :
+Placer la base brute dans `input/` :
 
 ```
-pipeline/input/base.dta
+input/base.dta
 ```
 
 > Formats acceptés : `.dta` (Stata), `.sav` (SPSS), `.csv`
@@ -86,24 +89,24 @@ pipeline/input/base.dta
 
 ```r
 # Depuis la racine du projet
-source("pipeline/main.R")
+source("main.R")
 ```
 
 Ou en ligne de commande :
 
 ```bash
-Rscript pipeline/main.R
+Rscript main.R
 ```
 
 ### 3. Sorties générées
 
 ```
-pipeline/output/
-├── table_individus_R9_2022.csv    ← Table individus (1 200 lignes)
-├── table_menages_R9_2022.csv      ← Table ménages (1 200 lignes)
+output/
+├── table_individus_R9_2022.csv         ← Table individus (1 200 lignes)
+├── table_menages_R9_2022.csv           ← Table ménages (1 200 lignes)
 └── qaqc/
-    ├── QAQC_Afrobarometer_R9_2022.html   ← Rapport interactif
-    └── QAQC_Afrobarometer_R9_2022.xlsx   ← Rapport Excel colorisé
+    ├── QAQC_Afrobarometer_R9_2022.html ← Rapport interactif
+    └── QAQC_Afrobarometer_R9_2022.xlsx ← Rapport Excel colorisé
 ```
 
 ---
@@ -136,8 +139,9 @@ pipeline/output/
 
 Le rapport HTML généré automatiquement contient :
 
-- **Vue d'ensemble** : métriques clés avec indicateurs colorisés (vert / orange / rouge)
-- **Valeurs manquantes** : taux de NA par variable avec seuils visuels (alerte >20%, critique >50%)
+- **Taille des bases** : comparaison base brute vs bases traitées (observations et variables)
+- **Indicateurs clés** : métriques colorisées (vert / orange / rouge)
+- **Valeurs manquantes** : taux de NA par variable avec seuils visuels (alerte >20 %, critique >50 %)
 - **Valeurs aberrantes** : détection par méthode IQR (facteur × 3)
 - **Contrôles de cohérence** : unicité des identifiants, plages de valeurs
 - **Estimations primaires** : distributions genre, éducation, région, milieu, emploi, ISIC Rev 4, actifs, privation
@@ -146,23 +150,33 @@ Le rapport HTML généré automatiquement contient :
 
 ## Adapter le pipeline à un nouveau round
 
-Le pipeline est conçu pour être **scalable**. Pour un nouveau round Afrobarometer, il suffit de modifier **uniquement `config.R`** :
+Le pipeline est conçu pour être **scalable sans toucher au code**. Trois étapes suffisent :
+
+### 1. Remplacer la base de données
+
+```
+input/base.dta  ←  remplacer par la nouvelle base
+```
+
+### 2. Mettre à jour le numéro de round dans `R/config.R`
 
 ```r
-# Changer le numéro de round et l'année
 ROUND <- list(numero = 10, annee = 2025, pays = "SEN")
-
-# Adapter le nom du fichier source
 FICHIER_BRUT <- "base_r10.dta"
-
-# Mettre à jour le mapping des variables si elles ont changé
-VARS_DEMO <- list(
-  age           = "Q1",
-  genre         = "Q100",
-  niveau_etudes = "Q94",
-  ...
-)
 ```
+
+### 3. Remplir les colonnes jaunes dans `input/variables_mapping.xlsx`
+
+Le fichier Excel contient deux feuilles éditables :
+
+| Feuille | Colonne à remplir | Rôle |
+|---------|-------------------|------|
+| **Variables** | `Variable nouveau round ✏️` | Nouveau nom de colonne si la base a changé |
+| **Modalités** | `Label nouveau round ✏️` | Nouveau libellé si les codes ont changé |
+
+> Si un nom n'a pas changé entre les rounds, laisser la cellule vide — le pipeline conserve automatiquement l'ancien nom.
+
+Relancer `main.R` — aucune autre modification de code nécessaire.
 
 ---
 
