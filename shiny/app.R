@@ -228,7 +228,7 @@ ui <- page_navbar(
     "navbar-bg"    = "#1B3A6B",
     "navbar-light-color" = "#FFFFFF"
   ),
-  bg = "#1B3A6B", fg = "#FFFFFF",
+  navbar_options = navbar_options(bg = "#1B3A6B", fg = "#FFFFFF"),
   fillable = FALSE,
 
   # ── Sidebar de filtres (partagée) ──────────────────────────────────────────
@@ -403,7 +403,7 @@ ui <- page_navbar(
 
   nav_panel(
     "Contrôle qualité",
-    icon = icon("shield-check"),
+    icon = icon("check-circle"),
     layout_column_wrap(
       width = 1/3,
       value_box("Observations totales", textOutput("qaqc_n"),
