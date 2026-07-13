@@ -164,15 +164,28 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
 
 ### Etape 1 - Installer les packages R
 
+Lancer le script d'installation fourni (gere les dependances systeme de `sf`) :
+
 ```r
-install.packages(c(
-  "haven", "labelled", "dplyr", "tidyr", "purrr",
-  "stringr", "here", "readxl", "tibble",
-  "rmarkdown", "knitr", "kableExtra", "ggplot2", "openxlsx",
-  # Cartographie (etape 08)
-  "sf", "geodata", "patchwork"
-))
+source("install_packages.R")
 ```
+
+```bash
+# ou en ligne de commande
+Rscript install_packages.R
+```
+
+Le script installe automatiquement les 3 groupes de packages, verifie les
+dependances systeme GDAL/GEOS/PROJ necessaires pour la cartographie, et
+affiche un bilan clair. Les packages de cartographie (`sf`, `geodata`,
+`patchwork`) sont optionnels : si leur installation echoue, le pipeline
+continue sans l'etape 08.
+
+> **Linux / WSL** : si `sf` echoue, installer d'abord les libs systeme :
+> ```bash
+> sudo apt-get install -y libgdal-dev libgeos-dev libproj-dev
+> ```
+> puis relancer `install_packages.R`.
 
 ### Etape 2 - Deposer la base brute
 

@@ -45,7 +45,9 @@ source(here("R", "04_qaqc.R"))
 source(here("R", "05_ponderation.R"))
 source(here("R", "06_analyse.R"))
 source(here("R", "07_export.R"))
-source(here("R", "08_cartographie.R"))
+if (requireNamespace("sf", quietly = TRUE)) {
+  source(here("R", "08_cartographie.R"))
+}
 
 # ==============================================================================
 # PIPELINE
@@ -103,10 +105,21 @@ message(paste(rep("-", 40), collapse = ""))
 chemins     <- lancer_export(table_individus, table_menages, rapport_qaqc, verbose = TRUE)
 chemin_html <- generer_rapport_html(rapport_qaqc, base = base, meta = res_import$meta, verbose = TRUE)
 
-# -- ETAPE 8 : Cartographie ---------------------------------------------------
+# -- ETAPE 8 : Cartographie (optionnelle) -------------------------------------
 message("\nETAPE 8/8 : Cartographie thematique par region")
 message(paste(rep("-", 40), collapse = ""))
-res_carto <- lancer_cartographie(table_individus, table_menages, verbose = TRUE)
+res_carto <- NULL
+if (exists("lancer_cartographie")) {
+  res_carto <- tryCatch(
+    lancer_cartographie(table_individus, table_menages, verbose = TRUE),
+    error = function(e) {
+      message("[08_carto] Cartographie ignoree : ", conditionMessage(e))
+      NULL
+    }
+  )
+} else {
+  message("[08_carto] Package 'sf' absent - etape ignoree (installer sf, geodata, patchwork)")
+}
 
 # -- Resume final -------------------------------------------------------------
 duree <- round(as.numeric(difftime(Sys.time(), ts_debut, units = "secs")), 1)
