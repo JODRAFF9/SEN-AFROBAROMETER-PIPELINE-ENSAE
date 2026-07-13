@@ -3,7 +3,7 @@
 # En interactif        : source("shiny/run_app.R")
 
 pkgs <- c("shiny", "bslib", "dplyr", "ggplot2", "tidyr", "haven", "here",
-          "DT", "purrr")
+          "DT", "purrr", "stringr", "scales")
 manquants <- pkgs[!sapply(pkgs, requireNamespace, quietly = TRUE)]
 if (length(manquants) > 0) {
   stop("Packages manquants : ", paste(manquants, collapse = ", "),

@@ -124,56 +124,97 @@ EXCL_VALS <- c(
 theme_afro <- function(base_size = 12) {
   theme_minimal(base_size = base_size, base_family = "sans") +
     theme(
-      plot.title       = element_text(colour = PAL$bleu, face = "bold", size = base_size + 1,
-                                      margin = margin(b = 4)),
-      plot.subtitle    = element_text(colour = PAL$gris, size = base_size - 1),
-      plot.caption     = element_text(colour = "#9CA3AF", size = 7.5, hjust = 1,
-                                      margin = margin(t = 4)),
-      axis.text        = element_text(colour = PAL$gris, size = base_size - 1),
-      axis.title       = element_text(colour = PAL$gris, size = base_size - 1),
+      plot.title       = element_text(colour = PAL$bleu, face = "bold",
+                                      size = base_size + 1, lineheight = 1.2,
+                                      margin = margin(b = 3)),
+      plot.subtitle    = element_text(colour = "#6B7280", size = base_size - 1.5,
+                                      margin = margin(b = 8)),
+      plot.caption     = element_text(colour = "#9CA3AF", size = 7, hjust = 1,
+                                      margin = margin(t = 6)),
+      axis.text        = element_text(colour = "#6B7280", size = base_size - 2),
+      axis.text.y      = element_text(colour = "#374151", size = base_size - 1.5),
+      axis.title       = element_text(colour = "#6B7280", size = base_size - 2),
+      axis.ticks       = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      axis.line.x      = element_line(colour = "#D1D5DB", linewidth = 0.4),
       legend.position  = "bottom",
       legend.title     = element_text(colour = PAL$gris, face = "bold", size = base_size - 2),
       legend.text      = element_text(colour = PAL$gris, size = base_size - 2),
-      legend.margin    = margin(t = 2),
+      legend.key.size  = unit(10, "pt"),
+      legend.margin    = margin(t = 4),
+      legend.spacing.x = unit(6, "pt"),
       plot.background  = element_rect(fill = "white", colour = NA),
       panel.background = element_rect(fill = "white", colour = NA),
       strip.text       = element_text(colour = PAL$bleu, face = "bold"),
-      plot.margin      = margin(8, 16, 6, 8)
+      plot.margin      = margin(10, 20, 8, 10)
     )
+}
+
+# ------------------------------------------------------------------------------
+# Palettes divergentes Likert
+# ------------------------------------------------------------------------------
+LIKERT_NEGATIF <- c("Tres mauvaise", "Mauvaise", "Plutot mauvaise",
+                    "Tres mauvaise direction", "Pire", "Se deteriorer",
+                    "Jamais", "Non", "Souvent", "Toujours",
+                    "Presque toujours", "Beaucoup de fois")
+LIKERT_POSITIF <- c("Tres bonne", "Bonne", "Plutot bonne",
+                    "Tres bonne direction", "Mieux", "S'ameliorer",
+                    "Toujours", "Oui")
+
+# Couleurs sequentielles selon l'intensite du pourcentage
+pal_seq <- function(fill_col, n) {
+  alpha_vals <- seq(0.35, 1.0, length.out = n)
+  scales::alpha(fill_col, alpha_vals)
 }
 
 # ------------------------------------------------------------------------------
 # Helpers graphiques
 # ------------------------------------------------------------------------------
+
+# vide_plot : retourne un graphique vide avec message
+vide_plot <- function(msg = "Aucune donnee pour ce filtre") {
+  ggplot() +
+    annotate("text", x = 0.5, y = 0.5, label = msg,
+             colour = "#9CA3AF", size = 4.5, fontface = "italic") +
+    theme_void() +
+    theme(plot.background = element_rect(fill = "white", colour = NA))
+}
+
 bar_prop <- function(df, var, titre, subtitle = "", fill_col = PAL$bleu) {
   d <- df |>
     dplyr::filter(!is.na(.data[[var]]),
                   !as.character(.data[[var]]) %in% EXCL_VALS) |>
     dplyr::count(.data[[var]], name = "n") |>
     dplyr::mutate(
-      pct = n / sum(n) * 100,
-      val = stringr::str_wrap(as.character(.data[[var]]), width = 30)
-    )
+      pct  = n / sum(n) * 100,
+      val  = stringr::str_wrap(as.character(.data[[var]]), width = 30),
+      rang = rank(pct, ties.method = "first")
+    ) |>
+    dplyr::arrange(rang)
 
-  if (nrow(d) == 0) return(ggplot() + theme_void() +
-    labs(title = "Aucune donnee disponible pour ce filtre"))
+  if (nrow(d) == 0) return(vide_plot())
+
+  # Couleur des points : plus fonce = plus frequent
+  n_cat  <- nrow(d)
+  fills  <- pal_seq(fill_col, n_cat)
+  d$fill <- fills[d$rang]
 
   ggplot(d, aes(x = reorder(val, pct), y = pct)) +
-    geom_col(fill = fill_col, width = 0.55, alpha = 0.9) +
+    geom_segment(aes(xend = reorder(val, pct), yend = 0),
+                 colour = "#E5E7EB", linewidth = 2.2, lineend = "round") +
+    geom_segment(aes(xend = reorder(val, pct), yend = 0, colour = fill),
+                 linewidth = 2.2, lineend = "round", show.legend = FALSE) +
+    geom_point(aes(colour = fill), size = 4.5, show.legend = FALSE) +
     geom_text(aes(label = paste0(round(pct, 1), "%")),
-              hjust = -0.1, size = 3.4, colour = "#374151", fontface = "bold") +
+              hjust = -0.45, size = 3.3, colour = "#1F2937", fontface = "bold") +
+    scale_colour_identity() +
     coord_flip() +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
-                       labels = function(x) paste0(x, "%")) +
-    labs(title = stringr::str_wrap(titre, width = 45),
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
+    labs(title = stringr::str_wrap(titre, width = 48),
          subtitle = subtitle, caption = CAPTION_STD,
          x = NULL, y = NULL) +
     theme_afro() +
-    theme(axis.line.x = element_blank(),
-          plot.title = element_text(lineheight = 1.2))
+    theme(axis.text.x = element_blank())
 }
 
 bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
@@ -185,8 +226,7 @@ bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
     dplyr::mutate(pct = n / sum(n) * 100) |>
     dplyr::ungroup()
 
-  if (nrow(d) == 0) return(ggplot() + theme_void() +
-    labs(title = "Aucune donnee disponible pour ce filtre"))
+  if (nrow(d) == 0) return(vide_plot())
 
   nom_grp <- switch(groupvar,
     milieu_lbl  = "Milieu",
@@ -194,26 +234,68 @@ bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
     tranche_age = "Tranche d'age",
     groupvar)
 
+  PAL_GRP <- c("#1B3A6B", "#009A44", "#CE1126", "#E65100", "#7B1FA2",
+               "#0277BD", "#558B2F", "#FCD116")
+
   d <- d |> dplyr::mutate(
-    val_wrap = stringr::str_wrap(as.character(.data[[var]]), width = 14)
+    val_wrap = stringr::str_wrap(as.character(.data[[var]]), width = 22),
+    grp_lbl  = as.character(.data[[groupvar]])
   )
 
-  ggplot(d, aes(x = val_wrap, y = pct,
-                fill = as.character(.data[[groupvar]]))) +
-    geom_col(position = position_dodge(0.72), width = 0.62, alpha = 0.9) +
-    geom_text(aes(label = paste0(round(pct, 0), "%")),
-              position = position_dodge(0.72), vjust = -0.35,
-              size = 2.8, colour = PAL$gris) +
-    scale_fill_manual(values = PAL_BARS, name = nom_grp) +
-    scale_y_continuous(expand = expansion(mult = c(0, 0.2)),
-                       labels = function(x) paste0(x, "%")) +
-    labs(title = stringr::str_wrap(titre, width = 45),
+  n_grp <- length(unique(d$grp_lbl))
+  dodge  <- 0.75
+
+  ggplot(d, aes(x = reorder(val_wrap, pct), y = pct, fill = grp_lbl)) +
+    geom_col(position = position_dodge(dodge), width = dodge * 0.88,
+             alpha = 0.88) +
+    geom_text(aes(label = paste0(round(pct, 0), "%"), colour = grp_lbl),
+              position = position_dodge(dodge), hjust = -0.2,
+              size = 2.9, fontface = "bold", show.legend = FALSE) +
+    scale_fill_manual(values  = PAL_GRP[seq_len(n_grp)], name = nom_grp) +
+    scale_colour_manual(values = PAL_GRP[seq_len(n_grp)]) +
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
+    coord_flip() +
+    labs(title = stringr::str_wrap(titre, width = 48),
          subtitle = subtitle, caption = CAPTION_STD,
          x = NULL, y = NULL) +
     theme_afro() +
-    theme(axis.text.x = element_text(size = 8, lineheight = 0.85),
-          legend.position = "bottom",
-          plot.title = element_text(lineheight = 1.2))
+    theme(axis.text.x  = element_blank(),
+          legend.position = "bottom") +
+    guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
+}
+
+# Dot plot pour scores regionaux (lollipop vertical)
+dot_region <- function(df, col_score, titre, fill_col = PAL$bleu,
+                       ymax = NULL, digits = 2) {
+  d <- df |>
+    dplyr::filter(!is.na(region_lbl), !is.na(.data[[col_score]])) |>
+    dplyr::group_by(region_lbl) |>
+    dplyr::summarise(val = mean(.data[[col_score]], na.rm = TRUE), .groups = "drop") |>
+    dplyr::arrange(val)
+
+  if (nrow(d) == 0) return(vide_plot())
+
+  n    <- nrow(d)
+  cols <- pal_seq(fill_col, n)
+  d$fill <- cols[rank(d$val, ties.method = "first")]
+  ylim_max <- if (!is.null(ymax)) ymax else max(d$val) * 1.22
+
+  ggplot(d, aes(x = reorder(region_lbl, val), y = val)) +
+    geom_segment(aes(xend = region_lbl, y = 0, yend = val),
+                 colour = "#E5E7EB", linewidth = 2.0, lineend = "round") +
+    geom_segment(aes(xend = region_lbl, y = 0, yend = val, colour = fill),
+                 linewidth = 2.0, lineend = "round", show.legend = FALSE) +
+    geom_point(aes(colour = fill), size = 5, show.legend = FALSE) +
+    geom_text(aes(label = format(round(val, digits), nsmall = digits)),
+              hjust = -0.5, size = 3.0, colour = "#1F2937", fontface = "bold") +
+    scale_colour_identity() +
+    coord_flip() +
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.22)),
+                       limits = c(0, ylim_max)) +
+    labs(title = stringr::str_wrap(titre, width = 48),
+         caption = CAPTION_STD, x = NULL, y = NULL) +
+    theme_afro() +
+    theme(axis.text.x = element_blank())
 }
 
 # Sidebar communes
@@ -749,7 +831,7 @@ server <- function(input, output, session) {
   output$plot_direction <- renderPlot({
     bar_prop(df_filt(), "direction_pays", "Direction generale du pays",
              fill_col = PAL$bleu)
-  }, res = 100)
+  }, res = 120)
 
   output$plot_econ <- renderPlot({
     d <- df_filt() |>
@@ -758,49 +840,72 @@ server <- function(input, output, session) {
       dplyr::filter(!is.na(val), !as.character(val) %in% EXCL_VALS) |>
       dplyr::mutate(
         indicateur = dplyr::recode(indicateur,
-          econ_pays  = "Economie\nnationale",
-          econ_perso = "Conditions\npersonnelles"),
-        val_wrap = stringr::str_wrap(as.character(val), width = 12)
+          econ_pays  = "Economie nationale",
+          econ_perso = "Conditions personnelles"),
+        val_wrap = stringr::str_wrap(as.character(val), width = 14)
       ) |>
       dplyr::count(indicateur, val_wrap) |>
       dplyr::group_by(indicateur) |>
       dplyr::mutate(pct = n / sum(n) * 100) |>
       dplyr::ungroup()
 
-    ggplot(d, aes(x = reorder(val_wrap, pct), y = pct, fill = indicateur)) +
-      geom_col(position = position_dodge(0.72), width = 0.62, alpha = 0.9) +
-      geom_text(aes(label = paste0(round(pct, 0), "%")),
-                position = position_dodge(0.72), hjust = -0.1,
-                size = 3.0, colour = PAL$gris) +
-      scale_fill_manual(
-        values = c("Economie\nnationale" = PAL$bleu, "Conditions\npersonnelles" = PAL$vert),
-        name   = NULL) +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
-                         labels = function(x) paste0(x, "%")) +
+    if (nrow(d) == 0) return(vide_plot())
+
+    # Ordre Likert fixe si possible
+    ordre_likert <- c("Tres mauvaise", "Mauvaise", "Ni bonne\nni mauvaise",
+                      "Ni bonne ni mauvaise", "Bonne", "Tres bonne",
+                      "Pire", "Pareil", "Mieux")
+    niveaux <- unique(d$val_wrap)
+    niveaux_ord <- c(
+      intersect(stringr::str_wrap(ordre_likert, 14), niveaux),
+      setdiff(niveaux, stringr::str_wrap(ordre_likert, 14))
+    )
+    d$val_wrap <- factor(d$val_wrap, levels = niveaux_ord)
+
+    PAL_ECON <- c("Economie nationale" = PAL$bleu, "Conditions personnelles" = PAL$vert)
+    dodge <- 0.72
+
+    ggplot(d, aes(x = val_wrap, y = pct, fill = indicateur)) +
+      geom_col(position = position_dodge(dodge), width = dodge * 0.88, alpha = 0.88) +
+      geom_text(aes(label = paste0(round(pct, 0), "%"), colour = indicateur),
+                position = position_dodge(dodge), hjust = -0.2,
+                size = 3.0, fontface = "bold", show.legend = FALSE) +
+      scale_fill_manual(values = PAL_ECON, name = NULL) +
+      scale_colour_manual(values = PAL_ECON) +
+      scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
       coord_flip() +
       labs(title = "Perception economique (Q4A / Q4B)",
+           subtitle = "Economie nationale vs. conditions personnelles",
            caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
-      theme(legend.position = "bottom")
-  }, res = 100)
+      theme(legend.position = "bottom", axis.text.x = element_blank()) +
+      guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
+  }, res = 120)
 
   output$plot_region <- renderPlot({
     d <- df_filt() |>
       dplyr::filter(!is.na(region_lbl)) |>
       dplyr::count(region_lbl, name = "n") |>
-      dplyr::mutate(pct = n / sum(n) * 100)
+      dplyr::mutate(pct = n / sum(n) * 100,
+                    rang = rank(pct, ties.method = "first"))
+    fills <- pal_seq(PAL$bleu, nrow(d))
+    d$fill <- fills[d$rang]
     ggplot(d, aes(x = reorder(region_lbl, pct), y = pct)) +
-      geom_col(fill = PAL$bleu, width = 0.68, alpha = 0.88) +
-      geom_text(aes(label = paste0(round(pct, 0), "%")),
-                hjust = -0.1, size = 3.2, colour = PAL$gris, fontface = "bold") +
+      geom_segment(aes(xend = region_lbl, yend = 0),
+                   colour = "#E5E7EB", linewidth = 2.2, lineend = "round") +
+      geom_segment(aes(xend = region_lbl, yend = 0, colour = fill),
+                   linewidth = 2.2, lineend = "round", show.legend = FALSE) +
+      geom_point(aes(colour = fill), size = 4.5, show.legend = FALSE) +
+      geom_text(aes(label = paste0(round(pct, 1), "%")),
+                hjust = -0.45, size = 3.2, colour = "#1F2937", fontface = "bold") +
+      scale_colour_identity() +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.2)),
-                         labels = function(x) paste0(x, "%")) +
+      scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
       labs(title = "Repartition par region", caption = CAPTION_STD,
            x = NULL, y = NULL) +
       theme_afro() +
-      theme(axis.line.x = element_blank())
-  }, res = 100)
+      theme(axis.text.x = element_blank())
+  }, res = 120)
 
   output$plot_pyramide <- renderPlot({
     d <- df_filt() |>
@@ -810,18 +915,26 @@ server <- function(input, output, session) {
       dplyr::mutate(pct = n / sum(n) * 100,
                     pct_dir = ifelse(sexe == "Homme", -pct, pct)) |>
       dplyr::ungroup()
+    if (nrow(d) == 0) return(vide_plot())
     ggplot(d, aes(x = tranche_age, y = pct_dir, fill = sexe)) +
-      geom_col(width = 0.68, alpha = 0.9) +
+      geom_col(width = 0.65, alpha = 0.88) +
+      geom_text(aes(label = paste0(round(abs(pct_dir), 1), "%"),
+                    hjust = ifelse(sexe == "Homme", 1.25, -0.25)),
+                size = 3.1, colour = "white", fontface = "bold") +
+      geom_hline(yintercept = 0, colour = "white", linewidth = 1.2) +
       scale_fill_manual(values = c("Homme" = PAL$bleu, "Femme" = PAL$rouge),
                         name = NULL) +
-      scale_y_continuous(labels = function(x) paste0(abs(x), "%")) +
+      scale_y_continuous(labels = function(x) paste0(abs(x), "%"),
+                         expand = expansion(mult = 0.08)) +
       coord_flip() +
       labs(title = "Pyramide des ages",
-           subtitle = "Hommes (gauche) / Femmes (droite)",
-           caption = CAPTION_STD, x = NULL, y = "%") +
+           subtitle = "Hommes (gauche)   |   Femmes (droite)",
+           caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
-      theme(legend.position = "bottom")
-  }, res = 100)
+      theme(legend.position = "bottom",
+            panel.grid      = element_blank(),
+            axis.text.x     = element_blank())
+  }, res = 120)
 
   # ---- Conditions de vie ---------------------------------------------------
   cv_plot <- function(col, titre) {
@@ -829,7 +942,7 @@ server <- function(input, output, session) {
       grp <- input$cv_group
       if (grp == "none") bar_prop(df_cv(), col, titre)
       else               bar_groupe(df_cv(), col, grp, titre)
-    }, res = 100)
+    }, res = 120)
   }
   output$cv_q6a <- cv_plot("Q6A", "Manque de nourriture")
   output$cv_q6b <- cv_plot("Q6B", "Manque d'eau potable")
@@ -838,22 +951,10 @@ server <- function(input, output, session) {
   output$cv_q6e <- cv_plot("Q6E", "Manque de revenus")
 
   output$cv_priv_region <- renderPlot({
-    d <- df_cv() |>
-      dplyr::filter(!is.na(region_lbl)) |>
-      dplyr::group_by(region_lbl) |>
-      dplyr::summarise(priv_moy = mean(score_privation, na.rm = TRUE), .groups = "drop")
-    ggplot(d, aes(x = reorder(region_lbl, priv_moy), y = priv_moy)) +
-      geom_col(fill = PAL$rouge, alpha = 0.85, width = 0.68) +
-      geom_text(aes(label = round(priv_moy, 2)), hjust = -0.1,
-                size = 3.2, colour = PAL$gris, fontface = "bold") +
-      coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.22)),
-                         limits = c(0, 4)) +
-      labs(title = "Score de privation moyen par region (/ 4)",
-           caption = CAPTION_STD, x = NULL, y = NULL) +
-      theme_afro() +
-      theme(axis.line.x = element_blank())
-  }, res = 100)
+    dot_region(df_cv(), "score_privation",
+               "Score de privation moyen par region (/ 4)",
+               fill_col = PAL$rouge, ymax = 4)
+  }, res = 120)
 
   # ---- Actifs et Emploi ----------------------------------------------------
   output$ae_emploi <- renderPlot({
@@ -862,24 +963,13 @@ server <- function(input, output, session) {
       bar_prop(df_ae(), "statut_emploi", "Statut d'emploi salarie", fill_col = PAL$vert)
     else
       bar_groupe(df_ae(), "statut_emploi", grp, "Statut d'emploi salarie")
-  }, res = 100)
+  }, res = 120)
 
   output$ae_actifs_region <- renderPlot({
-    d <- df_ae() |>
-      dplyr::filter(!is.na(region_lbl)) |>
-      dplyr::group_by(region_lbl) |>
-      dplyr::summarise(actifs_moy = mean(score_actifs, na.rm = TRUE), .groups = "drop")
-    ggplot(d, aes(x = reorder(region_lbl, actifs_moy), y = actifs_moy)) +
-      geom_col(fill = PAL$bleu, alpha = 0.87, width = 0.68) +
-      geom_text(aes(label = round(actifs_moy, 1)), hjust = -0.12,
-                size = 3.2, colour = PAL$gris, fontface = "bold") +
-      coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.2)), limits = c(0, 6)) +
-      labs(title = "Score d'actifs moyen par region (/ 6)",
-           caption = CAPTION_STD, x = NULL, y = NULL) +
-      theme_afro() +
-      theme(axis.line.x = element_blank())
-  }, res = 100)
+    dot_region(df_ae(), "score_actifs",
+               "Score d'actifs moyen par region (/ 6)",
+               fill_col = PAL$vert, ymax = 6, digits = 1)
+  }, res = 120)
 
   output$ae_biens <- renderPlot({
     biens_map <- c(Q90A = "Radio", Q90B = "Television", Q90C = "Voiture / Moto",
@@ -900,49 +990,67 @@ server <- function(input, output, session) {
       ) |>
       dplyr::filter(!is.na(possede))
 
+    PAL_GRP <- c("#1B3A6B", "#009A44", "#CE1126", "#E65100", "#7B1FA2", "#0277BD")
+
     if (grp != "none" && grp %in% names(d)) {
       d2 <- d |>
         dplyr::group_by(bien_lbl, .data[[grp]]) |>
-        dplyr::summarise(pct = mean(possede) * 100, .groups = "drop")
-      ggplot(d2, aes(x = bien_lbl, y = pct, fill = as.character(.data[[grp]]))) +
-        geom_col(position = position_dodge(0.72), width = 0.62, alpha = 0.9) +
-        scale_fill_manual(values = PAL_BARS, name = NULL) +
-        scale_y_continuous(expand = expansion(mult = c(0, 0.15)),
-                           labels = function(x) paste0(x, "%")) +
-        labs(title = "Possession de biens (%)", caption = CAPTION_STD,
-             x = NULL, y = "%") +
+        dplyr::summarise(pct = mean(possede) * 100, .groups = "drop") |>
+        dplyr::mutate(grp_lbl = as.character(.data[[grp]]))
+      n_grp <- length(unique(d2$grp_lbl))
+      dodge  <- 0.75
+      ggplot(d2, aes(x = reorder(bien_lbl, pct), y = pct, fill = grp_lbl)) +
+        geom_col(position = position_dodge(dodge), width = dodge * 0.88, alpha = 0.88) +
+        geom_text(aes(label = paste0(round(pct, 0), "%"), colour = grp_lbl),
+                  position = position_dodge(dodge), hjust = -0.2,
+                  size = 2.9, fontface = "bold", show.legend = FALSE) +
+        scale_fill_manual(values = PAL_GRP[seq_len(n_grp)], name = NULL) +
+        scale_colour_manual(values = PAL_GRP[seq_len(n_grp)]) +
+        scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
+        coord_flip() +
+        labs(title = "Possession de biens par groupe (%)", caption = CAPTION_STD,
+             x = NULL, y = NULL) +
         theme_afro() +
-        theme(legend.position = "bottom")
+        theme(legend.position = "bottom", axis.text.x = element_blank()) +
+        guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
     } else {
       d2 <- d |>
         dplyr::group_by(bien_lbl) |>
-        dplyr::summarise(pct = mean(possede) * 100, .groups = "drop")
+        dplyr::summarise(pct = mean(possede) * 100, .groups = "drop") |>
+        dplyr::mutate(rang = rank(pct, ties.method = "first"))
+      fills <- pal_seq(PAL$vert, nrow(d2))
+      d2$fill <- fills[d2$rang]
       ggplot(d2, aes(x = reorder(bien_lbl, pct), y = pct)) +
-        geom_col(fill = PAL$vert, alpha = 0.88, width = 0.65) +
-        geom_text(aes(label = paste0(round(pct, 1), "%")), hjust = -0.12,
-                  size = 3.6, colour = PAL$gris) +
+        geom_segment(aes(xend = reorder(bien_lbl, pct), yend = 0),
+                     colour = "#E5E7EB", linewidth = 2.2, lineend = "round") +
+        geom_segment(aes(xend = reorder(bien_lbl, pct), yend = 0, colour = fill),
+                     linewidth = 2.2, lineend = "round", show.legend = FALSE) +
+        geom_point(aes(colour = fill), size = 4.5, show.legend = FALSE) +
+        geom_text(aes(label = paste0(round(pct, 1), "%")),
+                  hjust = -0.45, size = 3.4, colour = "#1F2937", fontface = "bold") +
+        scale_colour_identity() +
         coord_flip() +
-        scale_y_continuous(expand = expansion(mult = c(0, 0.18)),
-                           labels = function(x) paste0(x, "%")) +
+        scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
         labs(title = "Possession de biens dans le menage (%)",
-             caption = CAPTION_STD, x = NULL, y = "% des menages") +
-        theme_afro()
+             caption = CAPTION_STD, x = NULL, y = NULL) +
+        theme_afro() +
+        theme(axis.text.x = element_blank())
     }
-  }, res = 100)
+  }, res = 120)
 
   # ---- Gouvernance et Securite ---------------------------------------------
   output$gs_insec_qrt <- renderPlot(
     bar_prop(df_gs(), "insecurite_quartier",
-             "Insecurite dans le quartier", fill_col = PAL$rouge), res = 100)
+             "Insecurite dans le quartier", fill_col = PAL$rouge), res = 120)
   output$gs_insec_dom <- renderPlot(
     bar_prop(df_gs(), "insecurite_maison",
-             "Insecurite au domicile", fill_col = PAL$rouge), res = 100)
+             "Insecurite au domicile", fill_col = PAL$rouge), res = 120)
   output$gs_corr_pol <- renderPlot(
     bar_prop(df_gs(), "corrup_police",
-             "Corruption policiere percue", fill_col = PAL$gris), res = 100)
+             "Corruption policiere percue", fill_col = PAL$gris), res = 120)
   output$gs_corr_fonct <- renderPlot(
     bar_prop(df_gs(), "corrup_fonct",
-             "Corruption des fonctionnaires percue", fill_col = PAL$gris), res = 100)
+             "Corruption des fonctionnaires percue", fill_col = PAL$gris), res = 120)
 
   # ---- Table brute ---------------------------------------------------------
   tbl_data <- reactive({
@@ -1032,37 +1140,49 @@ server <- function(input, output, session) {
   output$qaqc_na_hist <- renderPlot({
     d <- qaqc_na()
     ggplot(d, aes(x = pct_na)) +
-      geom_histogram(binwidth = 5, fill = PAL$bleu, colour = "white", alpha = 0.85) +
+      geom_histogram(binwidth = 5, fill = PAL$bleu, colour = "white", alpha = 0.82) +
       geom_vline(xintercept = 20, colour = PAL$rouge, linetype = "dashed",
-                 linewidth = 0.9) +
-      annotate("text", x = 21, y = Inf, label = "Seuil critique (20 %)",
-               hjust = 0, vjust = 2, colour = PAL$rouge, size = 3.4, fontface = "bold") +
+                 linewidth = 0.8) +
+      annotate("rect", xmin = 20, xmax = Inf, ymin = -Inf, ymax = Inf,
+               fill = PAL$rouge, alpha = 0.04) +
+      annotate("text", x = 21.5, y = Inf, label = "Seuil 20 %",
+               hjust = 0, vjust = 2.2, colour = PAL$rouge, size = 3.2, fontface = "bold") +
+      scale_x_continuous(labels = function(x) paste0(x, "%")) +
       labs(title = "Distribution des taux de valeurs manquantes",
-           subtitle = paste0(sum(d$pct_na == 0), " variables sans NA sur ", nrow(d)),
+           subtitle = paste0(sum(d$pct_na == 0), " variables sans NA | ",
+                             sum(d$pct_na > 20), " variables critiques (> 20 %)"),
            caption = CAPTION_STD, x = "Taux de NA (%)", y = "Nombre de variables") +
-      theme_afro()
-  }, res = 100)
+      theme_afro() +
+      theme(panel.grid.major.y = element_line(colour = "#F3F4F6", linewidth = 0.4))
+  }, res = 120)
 
   output$qaqc_region_cov <- renderPlot({
     d <- DF |>
       dplyr::filter(!is.na(region_lbl)) |>
       dplyr::count(region_lbl, name = "n") |>
       dplyr::mutate(
-        statut = ifelse(n >= 40, "Couverture adequate", "Couverture faible")
+        statut = ifelse(n >= 40, "Couverture adequate", "Couverture faible"),
+        rang   = rank(n, ties.method = "first")
       )
-    ggplot(d, aes(x = reorder(region_lbl, n), y = n, fill = statut)) +
-      geom_col(width = 0.68, alpha = 0.9) +
-      geom_text(aes(label = n), hjust = -0.12, size = 3.2, colour = PAL$gris) +
-      scale_fill_manual(
+    ggplot(d, aes(x = reorder(region_lbl, n), y = n, colour = statut)) +
+      geom_segment(aes(xend = region_lbl, yend = 0),
+                   colour = "#E5E7EB", linewidth = 2.2, lineend = "round") +
+      geom_segment(aes(xend = region_lbl, yend = 0),
+                   linewidth = 2.2, lineend = "round", show.legend = FALSE) +
+      geom_point(size = 5) +
+      geom_text(aes(label = n), hjust = -0.55, size = 3.2, colour = "#1F2937",
+                fontface = "bold") +
+      scale_colour_manual(
         values = c("Couverture adequate" = PAL$vert, "Couverture faible" = PAL$rouge),
         name   = NULL) +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0, 0.14))) +
+      scale_y_continuous(expand = expansion(mult = c(0.02, 0.22))) +
       labs(title = "Effectif enquete par region",
-           caption = CAPTION_STD, x = NULL, y = "Nombre d'observations") +
+           caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
-      theme(legend.position = "bottom")
-  }, res = 100)
+      theme(legend.position = "bottom", axis.text.x = element_blank()) +
+      guides(colour = guide_legend(override.aes = list(size = 4)))
+  }, res = 120)
 
   # ---- Telechargement ------------------------------------------------------
   dl_handler <- function(data_fn) {
