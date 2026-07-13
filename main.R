@@ -14,6 +14,7 @@
 #   5. Ponderation et estimations pondereees
 #   6. Analyses thematiques avancees
 #   7. Export (CSV + Excel + HTML)
+#   8. Cartographie thematique (cartes choroplethes par region)
 # ==============================================================================
 
 # -- Verification & installation des packages ---------------------------------
@@ -44,13 +45,14 @@ source(here("R", "04_qaqc.R"))
 source(here("R", "05_ponderation.R"))
 source(here("R", "06_analyse.R"))
 source(here("R", "07_export.R"))
+source(here("R", "08_cartographie.R"))
 
 # ==============================================================================
 # PIPELINE
 # ==============================================================================
 
 message("\n", paste(rep("=", 60), collapse = ""))
-message(sprintf(" PIPELINE AFROBAROMETER SENEGAL - Round %d (%d)",
+message(sprintf(" PIPELINE AFROBAROMETER SENEGAL - Round %d (%d) - 8 etapes",
                 ROUND$numero, ROUND$annee))
 message(paste(rep("=", 60), collapse = ""), "\n")
 
@@ -101,6 +103,11 @@ message(paste(rep("-", 40), collapse = ""))
 chemins     <- lancer_export(table_individus, table_menages, rapport_qaqc, verbose = TRUE)
 chemin_html <- generer_rapport_html(rapport_qaqc, base = base, meta = res_import$meta, verbose = TRUE)
 
+# -- ETAPE 8 : Cartographie ---------------------------------------------------
+message("\nETAPE 8/8 : Cartographie thematique par region")
+message(paste(rep("-", 40), collapse = ""))
+res_carto <- lancer_cartographie(table_individus, table_menages, verbose = TRUE)
+
 # -- Resume final -------------------------------------------------------------
 duree <- round(as.numeric(difftime(Sys.time(), ts_debut, units = "secs")), 1)
 
@@ -118,6 +125,10 @@ message(sprintf("    Individus CSV      : %s", chemins$tables$individus))
 message(sprintf("    Menages CSV        : %s", chemins$tables$menages))
 message(sprintf("    QAQC Excel         : %s", chemins$qaqc$excel %||% "(non genere)"))
 message(sprintf("    QAQC HTML          : %s", chemin_html %||% "(non genere - installer rmarkdown)"))
+if (!is.null(res_carto)) {
+  message(sprintf("    Cartes PNG         : %d carte(s) dans output/cartes/",
+                  length(res_carto$chemins)))
+}
 message(paste(rep("=", 60), collapse = ""), "\n")
 
 invisible(list(
@@ -128,5 +139,6 @@ invisible(list(
   estimations_pond = res_pond$estimations,
   analyse         = res_analyse,
   chemins         = chemins,
-  chemin_html     = chemin_html
+  chemin_html     = chemin_html,
+  cartographie    = res_carto
 ))

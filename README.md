@@ -96,6 +96,7 @@ flowchart TD
     end
 
     STEP6 --> STEP7
+    STEP6 --> STEP8
 
     subgraph STEP7 ["07 - Export"]
         E1[CSV individus et menages]
@@ -104,7 +105,16 @@ flowchart TD
         E1 & E2 & E3
     end
 
+    subgraph STEP8 ["08 - Cartographie"]
+        C1[Chargement shapefile GADM Senegal]
+        C2[Jointure regions x indicateurs]
+        C3[6 cartes choroplethes\nBien-etre, Privation, Vulnerabilite\nActifs, Urbanisation, Emploi]
+        C4[Panneau multi-cartes PNG]
+        C1 --> C2 --> C3 --> C4
+    end
+
     STEP7 --> OUT[(📂 output/\nTables CSV\nRapport QAQC HTML\nRapport Excel)]
+    STEP8 --> MAPS[(📂 output/cartes/\n6 cartes PNG\nPanneau complet)]
 
     style CONFIG fill:#EBF2FA,stroke:#1A3A5C,color:#1A3A5C
     style STEP1  fill:#E8F5E9,stroke:#2E7D32,color:#2E7D32
@@ -114,6 +124,7 @@ flowchart TD
     style STEP5  fill:#E0F7FA,stroke:#00838F,color:#00838F
     style STEP6  fill:#FCE4EC,stroke:#AD1457,color:#AD1457
     style STEP7  fill:#FBE9E7,stroke:#BF360C,color:#BF360C
+    style STEP8  fill:#F1F8E9,stroke:#558B2F,color:#33691E
 ```
 
 ---
@@ -131,6 +142,7 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
 |
 +-- output/                       <- Generes automatiquement a l'execution
 |   +-- qaqc/
+|   +-- cartes/                   <- Cartes PNG generees par 08_cartographie.R
 |
 +-- R/
     +-- config.R                  <- Lit le mapping Excel, configure le pipeline
@@ -142,6 +154,7 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
     +-- 05_ponderation.R          <- Poids d'enquete et estimations ponderees IC 95%
     +-- 06_analyse.R              <- Indices composites, vulnerabilite, tableaux croises
     +-- 07_export.R               <- Export CSV / Excel / HTML
+    +-- 08_cartographie.R         <- Cartes choroplethes par region (sf + ggplot2)
     +-- qaqc_report.Rmd           <- Template rapport QAQC HTML
 ```
 
@@ -155,7 +168,9 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
 install.packages(c(
   "haven", "labelled", "dplyr", "tidyr", "purrr",
   "stringr", "here", "readxl", "tibble",
-  "rmarkdown", "knitr", "kableExtra", "ggplot2", "openxlsx"
+  "rmarkdown", "knitr", "kableExtra", "ggplot2", "openxlsx",
+  # Cartographie (etape 08)
+  "sf", "geodata", "patchwork"
 ))
 ```
 
@@ -183,8 +198,16 @@ output/
 +-- table_individus_R9_2022.csv          <- 1 200 individus x variables enrichies
 +-- table_menages_R9_2022.csv            <- 1 200 menages x conditions de vie
 +-- qaqc/
-    +-- QAQC_Afrobarometer_R9_2022.html  <- Rapport interactif complet
-    +-- QAQC_Afrobarometer_R9_2022.xlsx  <- Rapport Excel colorise
+|   +-- QAQC_Afrobarometer_R9_2022.html <- Rapport interactif complet
+|   +-- QAQC_Afrobarometer_R9_2022.xlsx <- Rapport Excel colorise
++-- cartes/
+    +-- carte_bien_etre.png              <- Indice de bien-etre par region
+    +-- carte_privation.png              <- Indice de privation par region
+    +-- carte_vulnerabilite.png          <- Taux de vulnerabilite severe
+    +-- carte_actifs.png                 <- Score d'actifs par region
+    +-- carte_urbanisation.png           <- Taux d'urbanisation
+    +-- carte_emploi.png                 <- Precarite de l'emploi
+    +-- carte_panneau_complet.png        <- Toutes les cartes assemblees
 ```
 
 ---
@@ -230,6 +253,7 @@ output/
 | Segmentation vulnerabilite | 4 segments : Resilient, Vulnerable modere, Vulnerable, Tres vulnerable |
 | Tableaux croises ponderes | Genre x Education, Milieu x Emploi, Region x Vulnerabilite |
 | Profil regional | Tableau synthetique par region (privation, emploi, actifs, urbanisation) |
+| Cartes choroplethes | 6 cartes PNG + panneau assemble (fond GADM, geom_sf, patchwork) |
 
 </details>
 
