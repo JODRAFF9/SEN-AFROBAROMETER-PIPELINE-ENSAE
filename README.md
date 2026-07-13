@@ -47,6 +47,55 @@ SEN-AFROBAROMETER-PIPELINE-ENSAE/
 
 ---
 
+## Schéma du pipeline
+
+```mermaid
+flowchart TD
+    A[(📁 input/base.dta\nBase brute Afrobarometer)] --> B
+    X[(📊 input/variables_mapping.xlsx\nMapping variables & modalités)] --> C
+
+    subgraph CONFIG ["⚙️ Initialisation"]
+        C[config.R\nLit le mapping Excel\nRésout les noms de variables]
+    end
+
+    C --> B
+
+    subgraph IMPORT ["01 — Import"]
+        B[01_import.R\nLecture .dta/.sav/.csv\nNettoyage & recodage NA\nDétection outliers IQR]
+    end
+
+    B --> D
+    B --> E
+
+    subgraph TRAITEMENT ["02 & 03 — Consolidation"]
+        D[02_individus.R\nTable individus\nDémo · Géo · Emploi ISIC\nBiens · Services · Score actifs]
+        E[03_menages.R\nTable ménages\nConditions de vie\nIndice de privation]
+    end
+
+    D --> F
+    E --> F
+
+    subgraph QAQC ["04 — Contrôle qualité"]
+        F[04_qaqc.R\nTaux de NA par variable\nContrôles de cohérence\nEstimations primaires]
+    end
+
+    F --> G
+
+    subgraph EXPORT ["05 — Export"]
+        G[05_export.R\nCSV · Excel · Rapport HTML]
+    end
+
+    G --> H[(📂 output/\ntable_individus_R9_2022.csv\ntable_menages_R9_2022.csv\nQAQC_Afrobarometer_R9_2022.html)]
+
+    style CONFIG  fill:#EBF2FA,stroke:#1A3A5C,color:#1A3A5C
+    style IMPORT  fill:#E8F5E9,stroke:#2E7D32,color:#2E7D32
+    style TRAITEMENT fill:#FFF3E0,stroke:#EF6C00,color:#EF6C00
+    style QAQC    fill:#F3E5F5,stroke:#7B1FA2,color:#7B1FA2
+    style EXPORT  fill:#FBE9E7,stroke:#BF360C,color:#BF360C
+```
+
+---
+
 ## Installation
 
 ### Packages requis
