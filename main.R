@@ -144,7 +144,7 @@ if (!is.null(res_carto)) {
 }
 message(paste(rep("=", 60), collapse = ""), "\n")
 
-invisible(list(
+res_pipeline <- list(
   base            = base,
   table_individus = table_individus,
   table_menages   = table_menages,
@@ -154,4 +154,32 @@ invisible(list(
   chemins         = chemins,
   chemin_html     = chemin_html,
   cartographie    = res_carto
-))
+)
+
+# -- OUVERTURE AUTOMATIQUE DES SORTIES ----------------------------------------
+if (interactive()) {
+
+  # 1. Rapport QAQC HTML (ouvre dans le navigateur)
+  if (!is.null(chemin_html) && file.exists(chemin_html)) {
+    message("[main] Ouverture du rapport QAQC dans le navigateur...")
+    utils::browseURL(chemin_html)
+  }
+
+  # 2. Plateforme Shiny (lance et ouvre dans le navigateur)
+  chemin_shiny <- here("shiny", "app.R")
+  if (file.exists(chemin_shiny) &&
+      requireNamespace("shiny", quietly = TRUE) &&
+      requireNamespace("bslib", quietly = TRUE)) {
+    message("[main] Lancement de la plateforme Shiny...")
+    message("[main] Fermer la fenetre Shiny (Ctrl+C dans la console) pour reprendre la session R.")
+    shiny::runApp(here("shiny"), launch.browser = TRUE)
+  } else if (!file.exists(chemin_shiny)) {
+    message("[main] Plateforme Shiny introuvable (shiny/app.R manquant).")
+  } else {
+    message("[main] Packages 'shiny'/'bslib' manquants - plateforme non lancee.")
+    message("       Installez avec : install.packages(c('shiny','bslib','DT'))")
+  }
+
+}
+
+invisible(res_pipeline)
