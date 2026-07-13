@@ -1,22 +1,24 @@
 # ==============================================================================
-# MAIN.R — Pipeline principal Afrobarometer Sénégal
+# MAIN.R — Pipeline principal Afrobarometer Senegal
 # Usage :
-#   En ligne de commande : Rscript pipeline/main.R
-#   En interactif        : source("pipeline/main.R")
+#   En ligne de commande : Rscript main.R
+#   En interactif        : source("main.R")
 #
-# Prérequis : placer la base brute (base.dta) dans pipeline/input/
+# Prerequis : placer la base brute (base.dta) dans input/
 #
-# Étapes :
-#   1. Import & nettoyage
-#   2. Table individus consolidée
-#   3. Table ménages consolidée
-#   4. Contrôle qualité (QAQC)
-#   5. Export (CSV + Excel + HTML)
+# Etapes :
+#   1. Import et nettoyage
+#   2. Table individus consolidee
+#   3. Table menages consolidee
+#   4. Controle qualite (QAQC)
+#   5. Ponderation et estimations pondereees
+#   6. Analyses thematiques avancees
+#   7. Export (CSV + Excel + HTML)
 # ==============================================================================
 
-# ── Vérification & installation des packages ──────────────────────────────────
+# -- Verification & installation des packages ---------------------------------
 packages_requis <- c("haven", "labelled", "dplyr", "tidyr", "purrr",
-                     "stringr", "here", "tibble", "tools")
+                     "stringr", "here", "tibble", "tools", "readxl")
 
 packages_manquants <- packages_requis[
   !sapply(packages_requis, requireNamespace, quietly = TRUE)
@@ -24,7 +26,7 @@ packages_manquants <- packages_requis[
 
 if (length(packages_manquants) > 0) {
   stop(
-    "Packages manquants — installez avec :\n",
+    "Packages manquants - installez avec :\n",
     'install.packages(c(',
     paste0('"', packages_manquants, '"', collapse = ", "), "))"
   )
@@ -32,44 +34,46 @@ if (length(packages_manquants) > 0) {
 
 library(here)
 
-# ── Chargement des modules ────────────────────────────────────────────────────
+# -- Chargement des modules ---------------------------------------------------
 source(here("R", "config.R"))
 source(here("R", "utils.R"))
 source(here("R", "01_import.R"))
 source(here("R", "02_individus.R"))
 source(here("R", "03_menages.R"))
 source(here("R", "04_qaqc.R"))
-source(here("R", "05_export.R"))
+source(here("R", "05_ponderation.R"))
+source(here("R", "06_analyse.R"))
+source(here("R", "07_export.R"))
 
 # ==============================================================================
 # PIPELINE
 # ==============================================================================
 
 message("\n", paste(rep("=", 60), collapse = ""))
-message(sprintf(" PIPELINE AFROBAROMETER SÉNÉGAL — Round %d (%d)",
+message(sprintf(" PIPELINE AFROBAROMETER SENEGAL - Round %d (%d)",
                 ROUND$numero, ROUND$annee))
 message(paste(rep("=", 60), collapse = ""), "\n")
 
 ts_debut <- Sys.time()
 
-# ── ÉTAPE 1 : Import ──────────────────────────────────────────────────────────
-message("ÉTAPE 1/5 : Import et nettoyage de la base")
+# -- ETAPE 1 : Import ---------------------------------------------------------
+message("ETAPE 1/7 : Import et nettoyage de la base")
 message(paste(rep("-", 40), collapse = ""))
-res_import   <- lancer_import(verbose = TRUE)
-base         <- res_import$base
+res_import <- lancer_import(verbose = TRUE)
+base       <- res_import$base
 
-# ── ÉTAPE 2 : Table individus ─────────────────────────────────────────────────
-message("\nÉTAPE 2/5 : Construction de la table individus")
+# -- ETAPE 2 : Table individus ------------------------------------------------
+message("\nETAPE 2/7 : Construction de la table individus")
 message(paste(rep("-", 40), collapse = ""))
 table_individus <- construire_table_individus(base, verbose = TRUE)
 
-# ── ÉTAPE 3 : Table ménages ───────────────────────────────────────────────────
-message("\nÉTAPE 3/5 : Construction de la table ménages")
+# -- ETAPE 3 : Table menages --------------------------------------------------
+message("\nETAPE 3/7 : Construction de la table menages")
 message(paste(rep("-", 40), collapse = ""))
 table_menages <- construire_table_menages(base, verbose = TRUE)
 
-# ── ÉTAPE 4 : QAQC ────────────────────────────────────────────────────────────
-message("\nÉTAPE 4/5 : Contrôle qualité (QAQC)")
+# -- ETAPE 4 : QAQC -----------------------------------------------------------
+message("\nETAPE 4/7 : Controle qualite (QAQC)")
 message(paste(rep("-", 40), collapse = ""))
 rapport_qaqc <- produire_qaqc(
   df_individus     = table_individus,
@@ -78,28 +82,42 @@ rapport_qaqc <- produire_qaqc(
   verbose          = TRUE
 )
 
-# ── ÉTAPE 5 : Export ──────────────────────────────────────────────────────────
-message("\nÉTAPE 5/5 : Export des sorties")
+# -- ETAPE 5 : Ponderation ----------------------------------------------------
+message("\nETAPE 5/7 : Ponderation et estimations ponderees")
 message(paste(rep("-", 40), collapse = ""))
-chemins <- lancer_export(table_individus, table_menages, rapport_qaqc, verbose = TRUE)
+res_pond        <- lancer_ponderation(table_individus, table_menages, base, verbose = TRUE)
+table_individus <- res_pond$individus
+table_menages   <- res_pond$menages
 
-# Rapport QAQC HTML
+# -- ETAPE 6 : Analyses thematiques ------------------------------------------
+message("\nETAPE 6/7 : Analyses thematiques avancees")
+message(paste(rep("-", 40), collapse = ""))
+res_analyse     <- lancer_analyse(table_individus, table_menages, verbose = TRUE)
+table_individus <- res_analyse$individus
+
+# -- ETAPE 7 : Export ---------------------------------------------------------
+message("\nETAPE 7/7 : Export des sorties")
+message(paste(rep("-", 40), collapse = ""))
+chemins     <- lancer_export(table_individus, table_menages, rapport_qaqc, verbose = TRUE)
 chemin_html <- generer_rapport_html(rapport_qaqc, base = base, meta = res_import$meta, verbose = TRUE)
 
-# ── Résumé final ──────────────────────────────────────────────────────────────
+# -- Resume final -------------------------------------------------------------
 duree <- round(as.numeric(difftime(Sys.time(), ts_debut, units = "secs")), 1)
 
 message("\n", paste(rep("=", 60), collapse = ""))
-message(" PIPELINE TERMINÉ")
+message(" PIPELINE TERMINE")
 message(paste(rep("=", 60), collapse = ""))
-message(sprintf("  Durée totale      : %s secondes", duree))
-message(sprintf("  Individus traités : %d", nrow(table_individus)))
-message(sprintf("  Ménages traités   : %d", nrow(table_menages)))
-message(sprintf("  Sorties :"))
-message(sprintf("    Individus CSV   : %s", chemins$tables$individus))
-message(sprintf("    Ménages CSV     : %s", chemins$tables$menages))
-message(sprintf("    QAQC Excel      : %s", chemins$qaqc$excel %||% "(non généré)"))
-message(sprintf("    QAQC HTML       : %s", chemin_html %||% "(non généré — installer rmarkdown)"))
+message(sprintf("  Duree totale         : %s secondes", duree))
+message(sprintf("  Individus traites    : %d", nrow(table_individus)))
+message(sprintf("  Menages traites      : %d", nrow(table_menages)))
+message(sprintf("  Variable de poids    : %s", res_pond$var_poids))
+message(sprintf("  Indice bien-etre moy : %.1f / 100",
+                mean(table_individus$indice_bien_etre, na.rm = TRUE)))
+message("  Sorties :")
+message(sprintf("    Individus CSV      : %s", chemins$tables$individus))
+message(sprintf("    Menages CSV        : %s", chemins$tables$menages))
+message(sprintf("    QAQC Excel         : %s", chemins$qaqc$excel %||% "(non genere)"))
+message(sprintf("    QAQC HTML          : %s", chemin_html %||% "(non genere - installer rmarkdown)"))
 message(paste(rep("=", 60), collapse = ""), "\n")
 
 invisible(list(
@@ -107,6 +125,8 @@ invisible(list(
   table_individus = table_individus,
   table_menages   = table_menages,
   rapport_qaqc    = rapport_qaqc,
+  estimations_pond = res_pond$estimations,
+  analyse         = res_analyse,
   chemins         = chemins,
   chemin_html     = chemin_html
 ))
