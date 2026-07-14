@@ -107,7 +107,7 @@ DF_RAW  <- haven::read_dta(here("input", "base.dta"))
 # ------------------------------------------------------------------------------
 # Constantes UI
 # ------------------------------------------------------------------------------
-CAPTION_STD <- "Source : Afrobarometer Round 9 - Senegal (2022) | ENSAE Dakar"
+CAPTION_STD <- "Afrobarometer R9 (2022) | ENSAE Dakar"
 
 EXCL_VALS <- c(
   "Refuse de repondre [Ne pas lire]", "Je ne sais pas [Ne pas lire]",
@@ -131,6 +131,8 @@ theme_afro <- function(base_size = 11) {
                                       margin = margin(b = 8)),
       plot.caption     = element_text(colour = "#9CA3AF", size = 7, hjust = 1,
                                       margin = margin(t = 6)),
+      plot.title.position   = "plot",
+      plot.caption.position = "plot",
       axis.text        = element_text(colour = "#6B7280", size = base_size - 2),
       axis.text.y      = element_text(colour = "#374151", size = base_size - 1.5),
       axis.title       = element_text(colour = "#6B7280", size = base_size - 2),
@@ -209,10 +211,11 @@ bar_prop <- function(df, var, titre, subtitle = "", fill_col = PAL$bleu) {
               hjust = -0.45, size = 3.3, colour = "#1F2937", fontface = "bold") +
     scale_colour_identity() +
     coord_flip() +
-    scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
-    labs(title = stringr::str_wrap(titre, width = 48),
-         subtitle = subtitle, caption = CAPTION_STD,
-         x = NULL, y = NULL) +
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.32))) +
+    # Le titre est porte par le card_header ; ne pas le dupliquer dans le plot
+    labs(title = NULL,
+         subtitle = if (nzchar(subtitle)) subtitle else NULL,
+         caption = CAPTION_STD, x = NULL, y = NULL) +
     theme_afro() +
     theme(axis.text.x = element_blank())
 }
@@ -253,11 +256,11 @@ bar_groupe <- function(df, var, groupvar, titre, subtitle = "") {
               size = 2.9, fontface = "bold", show.legend = FALSE) +
     scale_fill_manual(values  = PAL_GRP[seq_len(n_grp)], name = nom_grp) +
     scale_colour_manual(values = PAL_GRP[seq_len(n_grp)]) +
-    scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
+    scale_y_continuous(expand = expansion(mult = c(0.01, 0.28))) +
     coord_flip() +
-    labs(title = stringr::str_wrap(titre, width = 48),
-         subtitle = subtitle, caption = CAPTION_STD,
-         x = NULL, y = NULL) +
+    labs(title = NULL,
+         subtitle = if (nzchar(subtitle)) subtitle else NULL,
+         caption = CAPTION_STD, x = NULL, y = NULL) +
     theme_afro() +
     theme(axis.text.x  = element_blank(),
           legend.position = "bottom") +
@@ -290,10 +293,9 @@ dot_region <- function(df, col_score, titre, fill_col = PAL$bleu,
               hjust = -0.5, size = 3.0, colour = "#1F2937", fontface = "bold") +
     scale_colour_identity() +
     coord_flip() +
-    scale_y_continuous(expand = expansion(mult = c(0.02, 0.22)),
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.28)),
                        limits = c(0, ylim_max)) +
-    labs(title = stringr::str_wrap(titre, width = 48),
-         caption = CAPTION_STD, x = NULL, y = NULL) +
+    labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
     theme_afro() +
     theme(axis.text.x = element_blank())
 }
@@ -874,9 +876,7 @@ server <- function(input, output, session) {
       scale_colour_manual(values = PAL_ECON) +
       scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
       coord_flip() +
-      labs(title = "Perception economique (Q4A / Q4B)",
-           subtitle = "Economie nationale vs. conditions personnelles",
-           caption = CAPTION_STD, x = NULL, y = NULL) +
+      labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
       theme(legend.position = "bottom", axis.text.x = element_blank()) +
       guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
@@ -900,9 +900,8 @@ server <- function(input, output, session) {
                 hjust = -0.45, size = 3.2, colour = "#1F2937", fontface = "bold") +
       scale_colour_identity() +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
-      labs(title = "Repartition par region", caption = CAPTION_STD,
-           x = NULL, y = NULL) +
+      scale_y_continuous(expand = expansion(mult = c(0.02, 0.30))) +
+      labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
       theme(axis.text.x = element_blank())
   }, res = 96)
@@ -927,7 +926,7 @@ server <- function(input, output, session) {
       scale_y_continuous(labels = function(x) paste0(abs(x), "%"),
                          expand = expansion(mult = 0.08)) +
       coord_flip() +
-      labs(title = "Pyramide des ages",
+      labs(title = NULL,
            subtitle = "Hommes (gauche)   |   Femmes (droite)",
            caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
@@ -1006,10 +1005,9 @@ server <- function(input, output, session) {
                   size = 2.9, fontface = "bold", show.legend = FALSE) +
         scale_fill_manual(values = PAL_GRP[seq_len(n_grp)], name = NULL) +
         scale_colour_manual(values = PAL_GRP[seq_len(n_grp)]) +
-        scale_y_continuous(expand = expansion(mult = c(0.01, 0.22))) +
+        scale_y_continuous(expand = expansion(mult = c(0.01, 0.28))) +
         coord_flip() +
-        labs(title = "Possession de biens par groupe (%)", caption = CAPTION_STD,
-             x = NULL, y = NULL) +
+        labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
         theme_afro() +
         theme(legend.position = "bottom", axis.text.x = element_blank()) +
         guides(fill = guide_legend(nrow = 1, override.aes = list(alpha = 1)))
@@ -1030,9 +1028,8 @@ server <- function(input, output, session) {
                   hjust = -0.45, size = 3.4, colour = "#1F2937", fontface = "bold") +
         scale_colour_identity() +
         coord_flip() +
-        scale_y_continuous(expand = expansion(mult = c(0.02, 0.24))) +
-        labs(title = "Possession de biens dans le menage (%)",
-             caption = CAPTION_STD, x = NULL, y = NULL) +
+        scale_y_continuous(expand = expansion(mult = c(0.02, 0.30))) +
+        labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
         theme_afro() +
         theme(axis.text.x = element_blank())
     }
@@ -1148,7 +1145,7 @@ server <- function(input, output, session) {
       annotate("text", x = 21.5, y = Inf, label = "Seuil 20 %",
                hjust = 0, vjust = 2.2, colour = PAL$rouge, size = 3.2, fontface = "bold") +
       scale_x_continuous(labels = function(x) paste0(x, "%")) +
-      labs(title = "Distribution des taux de valeurs manquantes",
+      labs(title = NULL,
            subtitle = paste0(sum(d$pct_na == 0), " variables sans NA | ",
                              sum(d$pct_na > 20), " variables critiques (> 20 %)"),
            caption = CAPTION_STD, x = "Taux de NA (%)", y = "Nombre de variables") +
@@ -1176,9 +1173,8 @@ server <- function(input, output, session) {
         values = c("Couverture adequate" = PAL$vert, "Couverture faible" = PAL$rouge),
         name   = NULL) +
       coord_flip() +
-      scale_y_continuous(expand = expansion(mult = c(0.02, 0.22))) +
-      labs(title = "Effectif enquete par region",
-           caption = CAPTION_STD, x = NULL, y = NULL) +
+      scale_y_continuous(expand = expansion(mult = c(0.02, 0.28))) +
+      labs(title = NULL, caption = CAPTION_STD, x = NULL, y = NULL) +
       theme_afro() +
       theme(legend.position = "bottom", axis.text.x = element_blank()) +
       guides(colour = guide_legend(override.aes = list(size = 4)))
